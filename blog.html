@@ -18,6 +18,10 @@
 </script>
 </head>
 <body>
+  <body class="blog">
+  <div class="fade-overlay"></div>
+   <div class="page-content">
+
   <header style="height: 40vh; background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1573899956763-6b3c48c32d72?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D') center/cover no-repeat;">
     <h1>Our Blog</h1>
     <p>Insights, reviews, and stories from the world of cinema.</p>
@@ -81,12 +85,15 @@
 
 
 
-    <div class="blog-card">
-      <img src="https://images.unsplash.com/photo-1523206489230-c012c64b2b48" alt="Soundtracks">
+   <div class="blog-card"
+     onclick="window.open('color/index.html','_blank')"style="cursor: pointer;">
+      <figure style="margin: 0; text-align: center;">
+      <img src="images/color.png" alt="colors emerging out of theatre screen" style="width: 100%; border-radius: 10px;">
+      </figure>
       <div class="blog-content">
-        <h3>Unforgettable Movie Soundtracks</h3>
-        <p>From orchestral scores to iconic songs — music that moves the screen.</p>
-        <a href="#">Read More</a>
+        <h3>How Filmmakers Manipulate Our Emotions Using Colours</h3>
+        <p>See how directors use colours to control tension, mood, and emotional impact in every shot.</p>
+        <a href="color/index.html" target="_blank">Read More</a>
       </div>
     </div>
 
@@ -129,6 +136,26 @@
   <footer>
     <p>© 2025 Cine Nostalgia. All rights reserved.</p>
   </footer>
+
+  <script>
+document.querySelectorAll("a").forEach(link => {
+  link.addEventListener("click", function (e) {
+    const url = this.href;
+
+    if (this.target === "_blank") return;
+
+    e.preventDefault();
+    document.body.classList.add("page-exit");
+
+    setTimeout(() => {
+      window.location.href = url;
+    }, 350);
+  });
+});
+</script>
+
+
+</div>
 </body>
 </html>
 

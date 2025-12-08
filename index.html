@@ -5,38 +5,85 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Cine Nostalgia</title>
   <link rel="stylesheet" href="style.css">
+  
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3167719027479889"
      crossorigin="anonymous"></script>
-     <link rel="icon" type="image/x-icon" href="favicon.ico">
-     <link rel="shortcut icon" href="favicon.ico">
-     <!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-G6R3518TFW"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
 
-  gtag('config', 'G-G6R3518TFW');
-</script>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="shortcut icon" href="favicon.ico">
+
+  <!-- Google tag -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-G6R3518TFW"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-G6R3518TFW');
+  </script>
+
+  <!-- Fade-in Animation CSS -->
+  <style>
+    .fade-text {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 1.2s ease-out forwards;
+    }
+
+    .fade-1 { animation-delay: 0.2s; }
+    .fade-2 { animation-delay: 0.4s; }
+    .fade-3 { animation-delay: 0.6s; }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+
 </head>
-<body>
-  <header>
-    <h1>Dive Into Movie Magic</h1>
-    <p>From classics to modern hits, stories that light up the screen.</p>
-    <a href="blog.html">Start Now</a>
-  </header>
 
-  <section class="gallery">
-    <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D " alt="Classic cinema">
-    <img src="https://images.unsplash.com/photo-1748302370590-ae114e6d5360?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Modern movie theatre">
-    <img src="https://images.unsplash.com/photo-1697911652537-b9fa185e6eab?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Film reel">
-    <img src="https://images.unsplash.com/photo-1759230766134-e3ff1c27d20e?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Theatre">
-    <img src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c" alt="Audience">
-    <img src="https://images.unsplash.com/photo-1616530940355-351fabd9524b?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Film Poster">
-  </section>
+<body class="home">
+<div class="fade-overlay"></div>
+  <div class="page-content">
+    <header>
+      <h1 class="fade-text fade-1 glassy-gold">Dive Into Movie Magic</h1>
+      <p class="fade-text fade-2">From classics to modern hits, stories that light up the screen.</p>
+      <a href="blog.html" class="fade-text fade-3 glass-btn">Start Now</a>
+    </header>
 
-  <footer>
-    <p>© 2025 Cine Nostalgia. All rights reserved.</p>
-  </footer>
+    <section class="gallery">
+      <img src="https://images.unsplash.com/photo-1536440136628-849c177e76a1?q=80&w=1025&auto=format&fit=crop&ixlib=rb-4.1.0" alt="Classic cinema">
+      <img src="https://images.unsplash.com/photo-1748302370590-ae114e6d5360?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0" alt="Modern movie theatre">
+      <img src="https://images.unsplash.com/photo-1697911652537-b9fa185e6eab?q=80&w=687&auto=format&fit=crop&ixlib=rb-4.1.0" alt="Film reel">
+      <img src="https://images.unsplash.com/photo-1759230766134-e3ff1c27d20e?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0" alt="Theatre">
+      <img src="https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c" alt="Audience">
+      <img src="https://images.unsplash.com/photo-1616530940355-351fabd9524b?q=80&w=735&auto=format&fit=crop&ixlib=rb-4.1.0" alt="Film Poster">
+    </section>
+
+    <footer>
+      <p>© 2025 Cine Nostalgia. All rights reserved.</p>
+    </footer>
+  </div>
+
+  <script>
+  document.querySelectorAll("a").forEach(link => {
+    const url = link.href;
+
+    link.addEventListener("click", function (e) {
+      if (this.target === "_blank") return;
+
+      e.preventDefault();
+      document.body.classList.add("page-exit");
+
+      setTimeout(() => {
+        window.location.href = url;
+      }, 350);
+    });
+  });
+  </script>
+
 </body>
 </html>
+
+

@@ -296,6 +296,100 @@ body.blog-page {
     line-height: 1.4;
   }
 }
+/* Premium Gold + Glass Effect */
+.glassy-gold {
+  font-size: 3rem;
+  font-weight: 700;
+  
+  /* Premium gold gradient */
+  background: linear-gradient(
+    to bottom,
+    #fff7d1 0%,
+    #f8d471 35%,
+    #e7b54b 65%,
+    #c39632 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+
+  /* Soft realistic 3D depth */
+  text-shadow:
+    0px 2px 3px rgba(0,0,0,0.25),    /* subtle drop shadow */
+    0px 4px 6px rgba(0,0,0,0.15);    /* softer ambient shadow */
+}
+header a {
+  display: inline-block;
+  padding: 12px 30px;
+  color: #f5d57b;
+  border: 2px solid #f5d57b;
+  background: transparent;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: 0.3s ease;
+}
+
+header a:hover {
+  background: rgba(245, 213, 123, 0.15);
+  box-shadow: 0 0 12px rgba(245, 213, 123, 0.4);
+  transform: translateY(-2px);
+}
+
+header a:active {
+  transform: translateY(1px);
+  box-shadow: 0 0 6px rgba(245, 213, 123, 0.25);
+}
+.gallery img {
+  opacity: 0;
+  transform: translateY(20px) scale(0.98);
+  animation: fadeZoom 1.3s ease-out forwards;
+}
+@keyframes fadeZoom {
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* Page fade-in on load */
+.page-content {
+  animation: fadeInPage 0.6s ease-in-out forwards;
+}
+
+.page-exit .page-content {
+  animation: fadeOutPage 0.4s ease-in-out forwards;
+}
+
+@keyframes fadeInPage {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeOutPage {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+/* Overlay stays on top and handles fade-out */
+.fade-overlay {
+  position: fixed;
+  inset: 0;
+  background: inherit; /* Same background as the current page */
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+/* On fade-out */
+body.page-exit .fade-overlay {
+  opacity: 1;
+}
+ 
+
 
 
 
