@@ -388,7 +388,79 @@ header a:active {
 body.page-exit .fade-overlay {
   opacity: 1;
 }
- 
+
+
+
+ .table-wrap {
+  max-width: 900px;
+  margin: 25px auto;
+  overflow-x: auto;
+}
+
+.comparison-table {
+  width: 95%;
+  margin: auto;
+  border-collapse: collapse;
+  background: #111;
+  color: #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.comparison-table thead {
+  background: #1c1c1c;
+}
+
+.comparison-table th {
+  font-weight: 600;
+  color: #fff;
+}
+
+.comparison-table tr:nth-child(even) {
+  background: #181818;
+}
+
+.comparison-table tr:hover {
+  background: #222;
+  transition: 0.2s ease;
+}
+.table-wrap {
+  -webkit-overflow-scrolling: touch;
+}
+.comparison-table tr {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+.comparison-table td:first-child {
+  font-weight: 600;
+  color: #fff;
+}
+
+
+.cult-blog .trailer-container {
+  margin-bottom: 25px;
+}
+.cult-blog .trailer-container .caption {
+  display: none !important;
+}
+
+.cult-blog .trailer-container {
+  background: none !important;
+  padding: 0 !important;
+  border: none !important;
+}
+
+.cult-blog .trailer-container p {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+
+
 
 
 
