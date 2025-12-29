@@ -475,6 +475,15 @@ body.page-exit .fade-overlay {
     margin: 0;
   }
 
+    /* Fix thumbnail image cropping on mobile */
+  .blog-list-page .blog-card img {
+    width: 100%;
+    height: 140px;        /* controls uniform height */
+    object-fit: cover;    /* cinematic crop */
+    border-radius: 12px;
+    display: block;
+  }
+
   /* Make titles compact */
   .blog-list-page .blog-card h3 {
     font-size: 14px;
