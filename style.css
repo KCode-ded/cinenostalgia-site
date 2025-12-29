@@ -460,6 +460,40 @@ body.page-exit .fade-overlay {
   margin-bottom: 20px;
 }
 
+/* BLOG LIST PAGE – Mobile layout fix only */
+@media (max-width: 768px) {
+
+  /* 2-column grid on mobile */
+  .blog-list-page .blog-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  /* Remove card margins that cause gaps */
+  .blog-list-page .blog-card {
+    margin: 0;
+  }
+
+  /* Make titles compact */
+  .blog-list-page .blog-card h3 {
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  /* Hide description text on mobile */
+  .blog-list-page .blog-card p {
+    display: none;
+  }
+
+  /* Smaller Read More button */
+  .blog-list-page .blog-card a {
+    font-size: 12px;
+    padding: 6px 10px;
+  }
+}
+
+
 
 
 
