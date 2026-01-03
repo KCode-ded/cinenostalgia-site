@@ -235,12 +235,30 @@
 
 
 
+    <div class="blog-card"
+     onclick="window.open('motivate/index.html','_blank')"style="cursor: pointer;">
+      <figure style="margin: 0; text-align: center;">
+      <img src="images/motivate.webp" alt="psychological movies thumbnail" style="width: 100%; border-radius: 10px;">
+      </figure>
+      <div class="blog-content">
+        <h3>Top 10 Motivational Movies to Inspire You in 2026</h3>
+        <p>These films speak to our deepest fears and aspirations, pushing us to rise stronger after every setback.</p>
+        <a href="motivate/index.html" target="_blank">Read More</a>
+      </div>
+    </div>
+
+
 
   </section>
 
-  <footer>
-    <p>© 2025 Cine Nostalgia. All rights reserved.</p>
-  </footer>
+<footer>
+  <p>© <span id="year"></span> Cine Nostalgia. All rights reserved.</p>
+</footer>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+
 
   <script>
 document.querySelectorAll("a").forEach(link => {
