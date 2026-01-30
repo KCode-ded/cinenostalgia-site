@@ -933,5 +933,99 @@ body.mood-page {
   margin-top: 18px;
 }
 
+/* =========================
+   MOBILE FIX (Responsive)
+========================= */
+@media (max-width: 768px) {
 
+  /* overall padding so it doesn't stick to edges */
+  .mood-container{
+    padding: 40px 16px;
+  }
+
+  /* hero text smaller */
+  .mood-hero h1{
+    font-size: 34px;
+    line-height: 1.15;
+  }
+
+  .mood-intro{
+    font-size: 14px;
+    max-width: 320px;
+    margin: 10px auto 0;
+  }
+
+  /* language buttons + globe center */
+  .lang-wrap{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 18px;
+    margin-bottom: 12px;
+  }
+
+  /* chips should wrap and have more gap */
+  .mood-selector{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .mood-chips{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    max-width: 360px;
+  }
+
+  /* results should become 1 column on phone */
+  #results{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    margin-top: 22px;
+    width: 100%;
+    max-width: 420px;
+  }
+
+  /* cards should fit properly */
+  .movie-card{
+    width: 100%;
+    max-width: 360px;
+    margin: 0 auto;
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  /* thumbnail should be full width and not overflow */
+  .trailer-thumb img{
+    width: 100%;
+    height: auto;
+    border-radius: 14px;
+    display: block;
+  }
+
+  /* movie title better on phone */
+  .movie-title{
+    font-size: 20px;
+    line-height: 1.2;
+    margin-top: 12px;
+  }
+
+  /* reload button centered */
+  #reloadBtn{
+    margin: 18px auto 0;
+    display: block;
+  }
+}
+
+/* If mobile is in "Desktop site" mode but small height/width */
+@media (max-width: 1024px) {
+  #results{
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
 
