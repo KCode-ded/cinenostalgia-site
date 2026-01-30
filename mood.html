@@ -1,0 +1,2063 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Find a Movie by Your Mood | Cine Nostalgia</title>
+  <meta name="theme-color" content="#050505">
+  <style>
+  html, body {
+    background: #050505;
+  }
+</style>
+  <link rel="stylesheet" href="style.css">
+
+  <!-- Fade-in Animation CSS -->
+  <style>
+    .fade-text {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 1.2s ease-out forwards;
+    }
+
+    .fade-1 { animation-delay: 0.2s; }
+    .fade-2 { animation-delay: 0.4s; }
+    .fade-3 { animation-delay: 0.6s; }
+
+    @keyframes fadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="mood-page">
+
+<main class="mood-container">
+
+  <!-- Header -->
+  <section class="mood-hero">
+    <p class="mood-eyebrow fade-text fade-1">🎬 Cinema understands emotions</p>
+    <h1 class="glassy-gold fade-text fade-2">How are you feeling right now?</h1>
+    <p class="mood-intro fade-text fade-3">
+      Choose a mood and we’ll suggest a movie that matches your state of mind.
+    </p>
+  </section>
+
+  <!-- Language + Mood Selector -->
+  <section class="mood-selector">
+
+    <!-- Language -->
+    <div class="language-selector">
+      <span class="lang-icon fade-text fade-3" title="Select language">🌐</span>
+      <button class="lang-btn active fade-text fade-3" data-lang="en">English</button>
+      <button class="lang-btn fade-text fade-3" data-lang="hi">Hindi</button>
+    </div>
+
+    <!-- Moods -->
+    <div class="mood-chips">
+      <button class="mood-chip fade-text fade-3" data-mood="Tonight’s Picks">✨ Tonight’s Picks</button>
+      <button class="mood-chip fade-text fade-3" data-mood="lonely">😔 Lonely</button>
+      <button class="mood-chip fade-text fade-3" data-mood="comfort">😌 Comfort</button>
+      <button class="mood-chip fade-text fade-3" data-mood="romantic">❤️ Romantic</button>
+      <button class="mood-chip fade-text fade-3" data-mood="thoughtful">🧠 Thought-provoking</button>
+      <button class="mood-chip fade-text fade-3" data-mood="intense">🔥 Intense</button>
+      <button class="mood-chip fade-text fade-3" data-mood="Horror">🥶 Horror</button>
+      <button class="mood-chip fade-text fade-3" data-mood="Comedy">😂 Comedy </button>
+    </div>
+
+  </section>
+
+  <!-- Results -->
+  <section class="mood-results" id="results"></section>
+
+  <!-- Reload -->
+  <button id="reloadBtn" style="display:none;">
+    🎲 Show me different movies
+  </button>
+
+</main>
+
+<!-- Sounds -->
+<audio id="hoverSound" src="sounds/hover.mp3" preload="auto"></audio>
+<audio id="clickSound" src="sounds/select.mp3" preload="auto"></audio>
+<audio id="ambientSound" src="sounds/theatre-hum.mp3" loop preload="auto"></audio>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  /* =========================
+     SOUND
+  ========================= */
+  const hoverSound = document.getElementById("hoverSound");
+  const clickSound = document.getElementById("clickSound");
+  const ambientSound = document.getElementById("ambientSound");
+
+  document.querySelectorAll(".mood-chip").forEach(btn => {
+    btn.addEventListener("mouseenter", () => {
+      hoverSound.currentTime = 0;
+      hoverSound.volume = 0.25;
+      hoverSound.play();
+    });
+
+    btn.addEventListener("click", () => {
+      clickSound.currentTime = 0;
+      clickSound.volume = 0.4;
+      clickSound.play();
+
+      // 🎞 Ambient theatre hum (fade in only once)
+      if (ambientSound.paused) {
+        ambientSound.volume = 0;
+        ambientSound.play();
+
+        let vol = 0;
+        const fadeIn = setInterval(() => {
+          if (vol < 0.04) {
+            vol += 0.002;
+            ambientSound.volume = vol;
+          } else {
+            clearInterval(fadeIn);
+          }
+        }, 200);
+      }
+    });
+  });
+
+  /* =========================
+     MOVIE DATA
+  ========================= */
+  const movies = [
+    {
+  title: "Forrest Gump",
+  mood: ["comfort", "hopeful", "feelgood"],
+  language: "en",
+  line: "A warm hug in movie form.",
+  trailerUrl: "https://www.youtube.com/watch?v=bLvqoHBptjg",
+  thumbnail: "https://img.youtube.com/vi/bLvqoHBptjg/maxresdefault.jpg"
+},
+{
+  title: "La La Land",
+  mood: ["romantic", "feelgood", "thoughtful"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=0pdqf4P9MB8",
+  thumbnail: "https://img.youtube.com/vi/0pdqf4P9MB8/maxresdefault.jpg",
+  line: "A dreamy love story between ambition and romance."
+},
+{
+  title: "50 First Dates",
+  mood: ["romantic", "comfort", "feelgood"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=Q_2AbjYeSMI",
+  thumbnail: "https://img.youtube.com/vi/Q_2AbjYeSMI/maxresdefault.jpg",
+  line: "Love that begins again every single day."
+},
+{
+  title: "Titanic",
+  mood: ["romantic", "intense", "tragic"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=2e-eXJ6HgkQ",
+  thumbnail: "https://img.youtube.com/vi/2e-eXJ6HgkQ/maxresdefault.jpg",
+  line: "An epic romance written against fate."
+},
+{
+  title: "The Notebook",
+  mood: ["romantic", "emotional"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=FC6biTjEyZw",
+  thumbnail: "https://img.youtube.com/vi/FC6biTjEyZw/maxresdefault.jpg",
+  line: "A love that never forgets."
+},
+{
+  title: "Blue Valentine",
+  mood: ["romantic", "intense", "realistic"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=aILx69WrRhQ",
+  thumbnail: "https://img.youtube.com/vi/aILx69WrRhQ/maxresdefault.jpg",
+  line: "Love, raw and painfully real."
+},
+{
+  title: "Love Actually",
+  mood: ["romantic", "comfort", "feelgood"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=H9Z3_ifFheQ",
+  thumbnail: "https://img.youtube.com/vi/H9Z3_ifFheQ/maxresdefault.jpg",
+  line: "Love, in all its messy and beautiful forms."
+},
+{
+  title: "Pride & Prejudice",
+  mood: ["romantic", "classic"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=1dYv5u6v55Y",
+  thumbnail: "https://img.youtube.com/vi/1dYv5u6v55Y/maxresdefault.jpg",
+  line: "Where pride meets passion."
+},
+{
+  title: "Before Sunrise",
+  mood: ["romantic", "thoughtful"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=6MUcuqbGTxc",
+  thumbnail: "https://img.youtube.com/vi/6MUcuqbGTxc/maxresdefault.jpg",
+  line: "Two strangers, one unforgettable night."
+},
+{
+  title: "Pretty Woman",
+  mood: ["romantic", "feelgood"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=2EBAVoN8L_U",
+  thumbnail: "https://img.youtube.com/vi/2EBAVoN8L_U/maxresdefault.jpg",
+  line: "A modern fairytale romance."
+},
+{
+  title: "Me Before You",
+  mood: ["romantic", "emotional"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=Eh993__rOxA",
+  thumbnail: "https://img.youtube.com/vi/Eh993__rOxA/maxresdefault.jpg",
+  line: "Love that changes you forever."
+},
+{
+  title: "The Proposal",
+  mood: ["romantic", "comfort"],
+  language: "en",
+  trailerUrl: "https://youtu.be/jHraHCjK094?si=HeT5jFDNMbnQGqdw",
+  thumbnail: "https://img.youtube.com/vi/jHraHCjK094/hqdefault.jpg",
+  line: "Fake love never felt so real."
+},
+{
+  title: "Call Me By Your Name",
+  mood: ["romantic", "thoughtful", "emotional"],
+  language: "en",
+  trailerUrl: "https://youtu.be/Z9AYPxH5NTM?si=Rvl5E7w5M0KQPWnx",
+  thumbnail: "https://img.youtube.com/vi/Z9AYPxH5NTM/hqdefault.jpg",
+  line: "A summer that leaves a lifetime mark."
+},
+{
+  title: "500 Days of Summer",
+  mood: ["romantic", "realistic"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=PsD0NpFSADM",
+  thumbnail: "https://img.youtube.com/vi/PsD0NpFSADM/maxresdefault.jpg",
+  line: "This is not a love story. Or is it?"
+},
+{
+  title: "Palm Springs",
+  mood: ["romantic", "feelgood", "quirky"],
+  language: "en",
+  trailerUrl: "https://youtu.be/CpBLtXduh_k?si=Ms1TZ1-e4wXiU60N",
+  thumbnail: "https://img.youtube.com/vi/CpBLtXduh_k/hqdefault.jpg",
+  line: "Love stuck in a time loop."
+},
+{
+  title: "Set It Up",
+  mood: ["romantic", "comfort"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=X-eRc9PF3TU",
+  thumbnail: "https://img.youtube.com/vi/X-eRc9PF3TU/maxresdefault.jpg",
+  line: "Falling in love while playing cupid."
+},
+{
+  title: "The Wedding Planner",
+  mood: ["romantic", "comfort"],
+  language: "en",
+  trailerUrl: "https://youtu.be/__PN6Hx1sQA?si=dDvfKeK5LpYsZoqj",
+  thumbnail: "https://img.youtube.com/vi/__PN6Hx1sQA/hqdefault.jpg",
+  line: "Love doesn’t follow schedules."
+},
+{
+  title: "Notting Hill",
+  mood: ["romantic", "classic"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=4RI0QvaGoiI",
+  thumbnail: "https://img.youtube.com/vi/4RI0QvaGoiI/maxresdefault.jpg",
+  line: "When an ordinary man meets an extraordinary woman."
+},
+{
+  title: "Crazy, Stupid, Love",
+  mood: ["romantic", "feelgood"],
+  language: "en",
+  trailerUrl: "https://www.youtube.com/watch?v=8iCwtxJejik",
+  thumbnail: "https://img.youtube.com/vi/8iCwtxJejik/maxresdefault.jpg",
+  line: "Love is messy, stupid, and beautiful."
+},
+{
+  title: "Friends with Benefits",
+  mood: ["romantic", "comfort"],
+  language: "en",
+  trailerUrl: "https://youtu.be/MxfaGMuiniI?si=c6amL_6eyxu3rk-W",
+  thumbnail: "https://img.youtube.com/vi/MxfaGMuiniI/hqdefault.jpg",
+  line: "Rules are made to be broken."
+},
+
+/* =========================
+   HINDI ROMANTIC / FEELGOOD
+========================= */
+
+{
+  title: "Kal Ho Naa Ho",
+  mood: ["romantic", "emotional"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=g0eO74UmRBs",
+  thumbnail: "https://img.youtube.com/vi/g0eO74UmRBs/maxresdefault.jpg",
+  line: "Love, laughter, and tears — all at once."
+},
+{
+  title: "Yeh Jawaani Hai Deewani",
+  mood: ["romantic", "feelgood"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=Rbp2XUSeUNE",
+  thumbnail: "https://img.youtube.com/vi/Rbp2XUSeUNE/maxresdefault.jpg",
+  line: "Friendship, dreams, and love growing up together."
+},
+{
+  title: "Jab We Met",
+  mood: ["romantic", "comfort"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/UDjCsnT4lBI?si=W4gDzRrZUuKtVjt3",
+  thumbnail: "https://img.youtube.com/vi/UDjCsnT4lBI/maxresdefault.jpg",
+  line: "A chance meeting that changes everything."
+},
+{
+  title: "3 Idiots",
+  mood: ["romantic", "feelgood", "thoughtful"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=K0eDlFX9GMc",
+  thumbnail: "https://img.youtube.com/vi/K0eDlFX9GMc/maxresdefault.jpg",
+  line: "Chase excellence, and love will follow."
+},
+{
+  title: "Dil Chahta Hai",
+  mood: ["romantic", "comfort"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/OBAcYSSUf6o?si=HVPRJYpk4QxtQ08I",
+  thumbnail: "https://img.youtube.com/vi/OBAcYSSUf6o/maxresdefault.jpg",
+  line: "Friendship, love, and growing up."
+},
+{
+  title: "Wake Up Sid",
+  mood: ["romantic", "comfort"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/Ngimy3GpHS0?si=lDS625SW8CW8uG0N",
+  thumbnail: "https://img.youtube.com/vi/Ngimy3GpHS0/maxresdefault.jpg",
+  line: "Finding yourself, one step at a time."
+},
+{
+  title: "Barfi!",
+  mood: ["romantic", "feelgood"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/DOhZXeMKk1A?si=E3sxeBbqMDoFCsQ8",
+  thumbnail: "https://img.youtube.com/vi/DOhZXeMKk1A/maxresdefault.jpg",
+  line: "Love beyond words."
+},
+{
+  title: "Zindagi Na Milegi Dobara",
+  mood: ["romantic", "feelgood"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=FJrpcDgC3zU",
+  thumbnail: "https://img.youtube.com/vi/FJrpcDgC3zU/maxresdefault.jpg",
+  line: "Live, love, and let go."
+},
+{
+  title: "Piku",
+  mood: ["romantic", "realistic"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=oeiKUlUUNQ8",
+  thumbnail: "https://img.youtube.com/vi/oeiKUlUUNQ8/maxresdefault.jpg",
+  line: "Love grows in the most unexpected ways."
+},
+{
+  title: "Chhichhore",
+  mood: ["romantic", "feelgood"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=tsxemFX0a7k",
+  thumbnail: "https://img.youtube.com/vi/tsxemFX0a7k/maxresdefault.jpg",
+  line: "Failure doesn’t define you."
+},
+{
+  title: "Queen",
+  mood: ["romantic", "empowering"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/Kj9jAHUIH_8?si=EiE2tU2mKGZKIeFg",
+  thumbnail: "https://img.youtube.com/vi/Kj9jAHUIH_8/maxresdefault.jpg",
+  line: "A journey to self-love."
+},
+{
+  title: "English Vinglish",
+  mood: ["romantic", "comfort"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/wmGVY4T88dc?si=iCUSs5KuG2rxFXeX",
+  thumbnail: "https://img.youtube.com/vi/wmGVY4T88dc/hqdefault.jpg",
+  line: "Respect begins with self-belief."
+},
+{
+  title: "Kapoor & Sons",
+  mood: ["romantic", "emotional"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/s7YYt9_KfsM?si=s_Re5QTaALNJ1t3j",
+  thumbnail: "https://img.youtube.com/vi/s7YYt9_KfsM/hqdefault.jpg",
+  line: "Every family has secrets."
+},
+{
+  title: "Hum Tum",
+  mood: ["romantic", "comfort"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/eNOmLIxv7U4?si=3b48PHTtN9hE5MAO",
+  thumbnail: "https://img.youtube.com/vi/eNOmLIxv7U4/hqdefault.jpg",
+  line: "Opposites attract over time."
+},
+{
+  title: "Dear Zindagi",
+  mood: ["romantic", "thoughtful"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/VwlZigLQIqU?si=c83j_W7cHweq9hEk",
+  thumbnail: "https://img.youtube.com/vi/VwlZigLQIqU/hqdefault.jpg",
+  line: "Learning to talk to yourself."
+},
+{
+  title: "The Lunchbox",
+  mood: ["romantic", "thoughtful"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/sK3R0rvnlPs?si=arowJA8VU33Jq9-m",
+  thumbnail: "https://img.youtube.com/vi/sK3R0rvnlPs/hqdefault.jpg",
+  line: "An accidental love story."
+},
+{
+  title: "Dil Dhadakne Do",
+  mood: ["romantic", "comfort"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/qfnJCv4_1Ts?si=jcSYwBu81_zvIObo",
+  thumbnail: "https://img.youtube.com/vi/qfnJCv4_1Ts/hqdefault.jpg",
+  line: "A family vacation with emotions."
+},
+{
+  title: "Rockstar",
+  mood: ["romantic", "intense"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=bD5FShPZdpw",
+  thumbnail: "https://img.youtube.com/vi/bD5FShPZdpw/maxresdefault.jpg",
+  line: "Love that fuels madness."
+},
+{
+  title: "Jaane Tu… Ya Jaane Na",
+  mood: ["romantic", "feelgood"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/NYqqFeLzRiI?si=bqLyEz9Vocac3quJ",
+  thumbnail: "https://img.youtube.com/vi/NYqqFeLzRiI/hqdefault.jpg",
+  line: "When friendship turns into love."
+},
+  {
+    title: "The Truman Show",
+    mood: ["thoughtful", "comfort"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=dlnmQbPGuls",
+    thumbnail: "https://img.youtube.com/vi/dlnmQbPGuls/maxresdefault.jpg",
+    line: "What if your life was a lie?"
+  },
+  {
+    title: "Inception",
+    mood: ["thoughtful", "intense"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=YoHD9XEInc0",
+    thumbnail: "https://img.youtube.com/vi/YoHD9XEInc0/maxresdefault.jpg",
+    line: "Dreams within dreams."
+  },
+  {
+    title: "Eternal Sunshine of the Spotless Mind",
+    mood: ["thoughtful", "romantic"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=yE-f1alkq9I",
+    thumbnail: "https://img.youtube.com/vi/yE-f1alkq9I/maxresdefault.jpg",
+    line: "Love, memory, and forgetting."
+  },
+  {
+    title: "The Matrix",
+    mood: ["thoughtful", "intense"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=vKQi3bBA1y8",
+    thumbnail: "https://img.youtube.com/vi/vKQi3bBA1y8/maxresdefault.jpg",
+    line: "What is real?"
+  },
+  {
+    title: "Interstellar",
+    mood: ["thoughtful", "emotional"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=zSWdZVtXT7E",
+    thumbnail: "https://img.youtube.com/vi/zSWdZVtXT7E/maxresdefault.jpg",
+    line: "Love transcends time and space."
+  },
+  {
+    title: "Fight Club",
+    mood: ["thoughtful", "intense"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=SUXWAEX2jlg",
+    thumbnail: "https://img.youtube.com/vi/SUXWAEX2jlg/maxresdefault.jpg",
+    line: "An identity crisis turned violent."
+  },
+  {
+    title: "Shutter Island",
+    mood: ["thoughtful", "intense", "mindbending"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=5iaYLCiq5RM",
+    thumbnail: "https://img.youtube.com/vi/5iaYLCiq5RM/hqdefault.jpg",
+    line: "Would you rather live as a monster?"
+  },
+  {
+    title: "Donnie Darko",
+    mood: ["thoughtful", "dark"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=ZZyBaFYFySk",
+    thumbnail: "https://img.youtube.com/vi/ZZyBaFYFySk/maxresdefault.jpg",
+    line: "Time, fate, and madness."
+  },
+  {
+    title: "Black Swan",
+    mood: ["thoughtful", "psychological", "intense"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=5jaI1XOB-bs",
+    thumbnail: "https://img.youtube.com/vi/5jaI1XOB-bs/maxresdefault.jpg",
+    line: "Perfection has consequences."
+  },
+  {
+    title: "The Prestige",
+    mood: ["thoughtful", "intense"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=o4gHCmTQDVI",
+    thumbnail: "https://i.ytimg.com/vi/o4gHCmTQDVI/hqdefault.jpg",
+    line: "The obsession behind the illusion."
+  },
+  {
+    title: "Arrival",
+    mood: ["thoughtful", "emotional"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=tFMo3UJ4B4g",
+    thumbnail: "https://img.youtube.com/vi/tFMo3UJ4B4g/maxresdefault.jpg",
+    line: "Time is not what we think."
+  },
+  {
+    title: "Her",
+    mood: ["thoughtful", "romantic"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=ne6p6MfLBxc",
+    thumbnail: "https://img.youtube.com/vi/ne6p6MfLBxc/maxresdefault.jpg",
+    line: "Love in the age of technology."
+  },
+  {
+    title: "Gone Girl",
+    mood: ["thoughtful", "dark", "intense", "psychological"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=0VGD_jLyE9Y",
+    thumbnail: "https://i.ytimg.com/vi/0VGD_jLyE9Y/hqdefault.jpg",
+    line: "Truth is subjective."
+  },
+  {
+    title: "Ex Machina",
+    mood: ["thoughtful", "psychological"],
+    language: "en",
+    trailerUrl: "https://youtu.be/sDkEF7Db7Gw?si=UAzv0CawzFdxkShv",
+    thumbnail: "https://img.youtube.com/vi/bggUmgeMCdc/maxresdefault.jpg",
+    line: "Can machines think — or manipulate?"
+  },
+  {
+    title: "The Lobster",
+    mood: ["thoughtful", "dark"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=vU29VfayDMw",
+    thumbnail: "https://img.youtube.com/vi/vU29VfayDMw/maxresdefault.jpg",
+    line: "Love by rules."
+  },
+  {
+    title: "Requiem for a Dream",
+    mood: ["thoughtful", "disturbing", "intense"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=jzk-lmU4KZ4",
+    thumbnail: "https://i.ytimg.com/vi/jzk-lmU4KZ4/hqdefault.jpg",
+    line: "Addiction destroys dreams."
+  },
+  {
+    title: "A Clockwork Orange",
+    mood: ["thoughtful", "dark"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=SPRzm8ibDQ8",
+    thumbnail: "https://img.youtube.com/vi/SPRzm8ibDQ8/maxresdefault.jpg",
+    line: "Free will versus control."
+  },
+  {
+    title: "No Country for Old Men",
+    mood: ["thoughtful", "dark", "intense"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=38A__WT3-o0",
+    thumbnail: "https://img.youtube.com/vi/38A__WT3-o0/maxresdefault.jpg",
+    line: "Violence has no rules."
+  },
+  {
+    title: "Memento",
+    mood: ["thoughtful", "mindbending"],
+    language: "en",
+    trailerUrl: "https://www.youtube.com/watch?v=0vS0E9bBSL0",
+    thumbnail: "https://i.ytimg.com/vi/0vS0E9bBSL0/hqdefault.jpg",
+    line: "Memory is unreliable."
+  },
+  {
+    title: "Synecdoche, New York",
+    mood: ["thoughtful", "existential"],
+    language: "en",
+    trailerUrl: "https://youtu.be/i2q8F0yRmrs?si=DZoCV8Kk9w5Hb18l",
+    thumbnail: "https://i.ytimg.com/vi/i2q8F0yRmrs/hqdefault.jpg",
+    line: "A life within a life."
+  },
+{
+  title: "Swades",
+  mood: ["thoughtful", "hopeful", "comfort"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/vc7AZNWvs0M?si=amVmyRdMBm_SP9YJ",
+  thumbnail: "https://i.ytimg.com/vi/vc7AZNWvs0M/hqdefault.jpg",
+  line: "A quiet reminder that change begins at home."
+},
+{
+  title: "Taare Zameen Par",
+  mood: ["thoughtful", "emotional", "romantic", "comfort"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=tn_2Ie_jtX8",
+  thumbnail: "https://img.youtube.com/vi/tn_2Ie_jtX8/maxresdefault.jpg",
+  line: "Every child is special — if we choose to see."
+},
+{
+  title: "Rang De Basanti",
+  mood: ["thoughtful", "intense"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/QHhnhqxB4E8?si=A4ChQUc5kORj6a-s",
+  thumbnail: "https://i.ytimg.com/vi/QHhnhqxB4E8/hqdefault.jpg",
+  line: "When history asks uncomfortable questions."
+},
+{
+  title: "Masaan",
+  mood: ["thoughtful", "melancholic"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=SKJfBo3xMW0",
+  thumbnail: "https://img.youtube.com/vi/SKJfBo3xMW0/maxresdefault.jpg",
+  line: "Life, death, and the weight of silent regrets."
+},
+{
+  title: "Pink",
+  mood: ["thoughtful", "intense"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=AL2TShb6fFs",
+  thumbnail: "https://img.youtube.com/vi/AL2TShb6fFs/maxresdefault.jpg",
+  line: "Consent is not a debate."
+},
+{
+  title: "Article 15",
+  mood: ["thoughtful", "dark", "intense"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=HKOJY0cU63E",
+  thumbnail: "https://img.youtube.com/vi/HKOJY0cU63E/maxresdefault.jpg",
+  line: "A mirror held up to uncomfortable truths."
+},
+{
+  title: "Black Friday",
+  mood: ["thoughtful", "intense", "crime"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/lnZ0O2IP4Uo?si=etACov0TAZf8UHgp",
+  thumbnail: "https://i.ytimg.com/vi/lnZ0O2IP4Uo/hqdefault.jpg",
+  line: "Reality is often darker than fiction."
+},
+{
+  title: "Haider",
+  mood: ["thoughtful", "dark", "intense", "dark"],
+  language: "hi",
+  trailerUrl: "https://www.youtube.com/watch?v=ZmN_VSo8DOo",
+  thumbnail: "https://img.youtube.com/vi/ZmN_VSo8DOo/maxresdefault.jpg",
+  line: "Shakespeare, politics, and personal revenge."
+},
+{
+  title: "Aligarh",
+  mood: ["thoughtful", "emotional"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/JezwsQKpXuU?si=KVBPJahFvJRS07PI",
+  thumbnail: "https://i.ytimg.com/vi/JezwsQKpXuU/hqdefault.jpg",
+  line: "Dignity is a basic human right."
+},
+{
+  title: "Udaan",
+  mood: ["thoughtful", "hopeful"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/wEJxe2bE-cE?si=BamkR0oIyHuhdCRI",
+  thumbnail: "https://i.ytimg.com/vi/wEJxe2bE-cE/hqdefault.jpg",
+  line: "Breaking free from inherited pain."
+},
+{
+  title: "Ship of Theseus",
+  mood: ["thoughtful", "philosophical"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/S5JW92zk32s?si=PZewm5vBkkr_F80d",
+  thumbnail: "https://i.ytimg.com/vi/S5JW92zk32s/hqdefault.jpg",
+  line: "If everything changes, what remains?"
+},
+{
+  title: "Newton",
+  mood: ["thoughtful", "satirical"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/yU6zMPFd4UU?si=4kRWHNxsiULmMSBa",
+  thumbnail: "https://i.ytimg.com/vi/yU6zMPFd4UU/hqdefault.jpg",
+  line: "Democracy on paper vs democracy in reality."
+},
+{
+  title: "Ankhon Dekhi",
+  mood: ["thoughtful", "gentle"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/H3yKUHI2mE4?si=OVDhFsuBHd-cJ2y4",
+  thumbnail: "https://i.ytimg.com/vi/H3yKUHI2mE4/hqdefault.jpg",
+  line: "Only believe what you truly see."
+},
+{
+  title: "Court",
+  mood: ["thoughtful", "realistic"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/4sc8z7zav9A?si=MaekT8rRP_0BXNGA",
+  thumbnail: "https://i.ytimg.com/vi/4sc8z7zav9A/hqdefault.jpg",
+  line: "Justice moves slowly — painfully so."
+},
+{
+  title: "Mukti Bhawan",
+  mood: ["thoughtful", "spiritual"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/1A1Sp6-GcmI?si=FLGy12BwfWP5NGK8",
+  thumbnail: "https://i.ytimg.com/vi/1A1Sp6-GcmI/hqdefault.jpg",
+  line: "A calm meditation on life and death."
+},
+{
+  title: "Kadvi Hawa",
+  mood: ["thoughtful", "realistic"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/7mUzT87IOqY?si=48292NPt3MvfynK-",
+  thumbnail: "https://i.ytimg.com/vi/7mUzT87IOqY/hqdefault.jpg",
+  line: "When climate change becomes personal."
+},
+{
+  title: "Dor",
+  mood: ["thoughtful", "emotional"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/IuiKIF9LIHM?si=ZpBYfdEwrNL0O75B",
+  thumbnail: "https://i.ytimg.com/vi/IuiKIF9LIHM/hqdefault.jpg",
+  line: "Two lives tied by fate and forgiveness."
+},
+{
+  title: "No Smoking",
+  mood: ["thoughtful", "surreal"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/53D_Qs1C6k4?si=ExLS_L5BU5uuwnBE",
+  thumbnail: "https://i.ytimg.com/vi/53D_Qs1C6k4/hqdefault.jpg",
+  line: "Kafkaesque chaos and addiction."
+},
+{
+  title: "OMG – Oh My God!",
+  mood: ["thoughtful", "satirical"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/S3b7F4rGre0?si=bPVz_8tJz_9RWHr4",
+  thumbnail: "https://i.ytimg.com/vi/S3b7F4rGre0/hqdefault.jpg",
+  line: "Faith, business, and uncomfortable questions."
+},
+{
+  title: "Stanley Ka Dabba",
+  mood: ["thoughtful", "gentle"],
+  language: "hi",
+  trailerUrl: "https://youtu.be/Fj1JewyRE4c?si=IRVaIIwjr9qx_M2C",
+  thumbnail: "https://i.ytimg.com/vi/Fj1JewyRE4c/hqdefault.jpg",
+  line: "Innocence hides the deepest truths."
+},
+/* =========================
+   LONELY GENRE — 20 MOVIES
+   (10 EN + 10 HI)
+========================= */
+
+{
+  title: "Her",
+  mood: ["lonely"],
+  language: "en",
+  line: "A heartbreakingly beautiful story about love in the modern world.",
+  trailerUrl: "https://www.youtube.com/watch?v=ne6p6MfLBxc",
+  thumbnail: "https://img.youtube.com/vi/ne6p6MfLBxc/maxresdefault.jpg"
+},
+{
+  title: "Lost in Translation",
+  mood: ["lonely", "thoughtful"],
+  language: "en",
+  line: "Two strangers find comfort in a city that feels too big and too quiet.",
+  trailerUrl: "https://www.youtube.com/watch?v=W6iVPCRflQM",
+  thumbnail: "https://img.youtube.com/vi/W6iVPCRflQM/maxresdefault.jpg"
+},
+{
+  title: "Manchester by the Sea",
+  mood: ["lonely", "emotional"],
+  language: "en",
+  line: "A deeply human story of grief, guilt, and learning to survive your own mind.",
+  trailerUrl: "https://www.youtube.com/watch?v=gsVoD0pTge0",
+  thumbnail: "https://img.youtube.com/vi/gsVoD0pTge0/maxresdefault.jpg"
+},
+{
+  title: "Eternal Sunshine of the Spotless Mind",
+  mood: ["lonely", "romantic", "thoughtful"],
+  language: "en",
+  line: "When memories fade, feelings still remain — even the painful ones.",
+  trailerUrl: "https://www.youtube.com/watch?v=07-QBnEkgXU",
+  thumbnail: "https://img.youtube.com/vi/07-QBnEkgXU/maxresdefault.jpg"
+},
+{
+  title: "The Perks of Being a Wallflower",
+  mood: ["lonely", "comfort", "emotional"],
+  language: "en",
+  line: "A gentle reminder that even the quiet ones deserve a place to belong.",
+  trailerUrl: "https://www.youtube.com/watch?v=n5rh7O4IDc0",
+  thumbnail: "https://img.youtube.com/vi/n5rh7O4IDc0/maxresdefault.jpg"
+},
+{
+  title: "Cast Away",
+  mood: ["lonely", "survival", "hopeful"],
+  language: "en",
+  line: "When the world disappears, your willpower becomes your only company.",
+  trailerUrl: "https://www.youtube.com/watch?v=qGuOZPwLayY",
+  thumbnail: "https://img.youtube.com/vi/qGuOZPwLayY/maxresdefault.jpg"
+},
+{
+  title: "The Terminal",
+  mood: ["lonely", "comfort", "hopeful"],
+  language: "en",
+  line: "Stranded in a strange place, he builds a life out of patience and kindness.",
+  trailerUrl: "https://www.youtube.com/watch?v=iZqQRmhRvyg",
+  thumbnail: "https://img.youtube.com/vi/iZqQRmhRvyg/maxresdefault.jpg"
+},
+{
+  title: "Into the Wild",
+  mood: ["lonely", "thoughtful", "adventure"],
+  language: "en",
+  line: "A journey into isolation that feels freeing… until it feels empty.",
+  trailerUrl: "https://www.youtube.com/watch?v=g7ArZ7VD-QQ",
+  thumbnail: "https://img.youtube.com/vi/g7ArZ7VD-QQ/maxresdefault.jpg"
+},
+{
+  title: "Joker",
+  mood: ["lonely", "intense", "dark"],
+  language: "en",
+  line: "A haunting look at loneliness turning into rage when nobody listens.",
+  trailerUrl: "https://www.youtube.com/watch?v=zAGVQLHvwOY",
+  thumbnail: "https://img.youtube.com/vi/zAGVQLHvwOY/maxresdefault.jpg"
+},
+{
+  title: "A Beautiful Mind",
+  mood: ["lonely", "hopeful", "thoughtful"],
+  language: "en",
+  line: "Even when the world feels unreal, love can keep you grounded.",
+  trailerUrl: "https://youtu.be/EajIlG_OCvw?si=3uNeENqVqzsA91FM",
+  thumbnail: "https://img.youtube.com/vi/YWwAOutgWBQ/maxresdefault.jpg"
+},
+
+/* =========================
+   LONELY — HINDI (10)
+========================= */
+
+{
+  title: "Tamasha",
+  mood: ["lonely", "thoughtful", "romantic"],
+  language: "hi",
+  line: "When you forget who you are, life starts feeling lonely even in crowds.",
+  trailerUrl: "https://youtu.be/o-e5eWVCzx8?si=vcdvqIgXPcwQqfgi",
+  thumbnail: "https://img.youtube.com/vi/o-e5eWVCzx8/hqdefault.jpg"
+},
+{
+  title: "Rockstar",
+  mood: ["lonely", "intense", "romantic"],
+  language: "hi",
+  line: "A love so intense it turns into pain… and pain turns into art.",
+  trailerUrl: "https://www.youtube.com/watch?v=bD5FShPZdpw",
+  thumbnail: "https://img.youtube.com/vi/bD5FShPZdpw/maxresdefault.jpg"
+},
+{
+  title: "Barfi!",
+  mood: ["lonely", "feelgood", "romantic"],
+  language: "hi",
+  line: "Even in silence, love finds a way to speak beautifully.",
+  trailerUrl: "https://youtu.be/DOhZXeMKk1A?si=E3sxeBbqMDoFCsQ8",
+  thumbnail: "https://img.youtube.com/vi/DOhZXeMKk1A/maxresdefault.jpg"
+},
+{
+  title: "Dear Zindagi",
+  mood: ["lonely", "comfort", "thoughtful"],
+  language: "hi",
+  line: "Sometimes loneliness is just your heart asking for healing.",
+  trailerUrl: "https://youtu.be/VwlZigLQIqU?si=c83j_W7cHweq9hEk",
+  thumbnail: "https://img.youtube.com/vi/VwlZigLQIqU/hqdefault.jpg"
+},
+{
+  title: "Masaan",
+  mood: ["lonely", "emotional", "thoughtful"],
+  language: "hi",
+  line: "Two broken lives slowly learn that pain isn’t permanent.",
+  trailerUrl: "https://www.youtube.com/watch?v=SKJfBo3xMW0",
+  thumbnail: "https://img.youtube.com/vi/SKJfBo3xMW0/maxresdefault.jpg"
+},
+{
+  title: "The Lunchbox",
+  mood: ["lonely", "romantic", "thoughtful"],
+  language: "hi",
+  line: "An accidental friendship born from loneliness and letters.",
+  trailerUrl: "https://youtu.be/sK3R0rvnlPs?si=arowJA8VU33Jq9-m",
+  thumbnail: "https://img.youtube.com/vi/sK3R0rvnlPs/hqdefault.jpg"
+},
+{
+  title: "Udaan",
+  mood: ["lonely", "hopeful", "thoughtful"],
+  language: "hi",
+  line: "When home feels like a prison, freedom becomes your only dream.",
+  trailerUrl: "https://youtu.be/wEJxe2bE-cE?si=piEPVthCN0X1ObRA",
+  thumbnail: "https://img.youtube.com/vi/wEJxe2bE-cE/hqdefault.jpg"
+},
+{
+  title: "Tere Naam",
+  mood: ["lonely", "romantic", "tragic"],
+  language: "hi",
+  line: "Love that spirals into obsession and heartbreaking loneliness.",
+  trailerUrl: "https://youtu.be/VvZ5q8mNYlY?si=8okWnPODvTNMOJBN",
+  thumbnail: "https://img.youtube.com/vi/VvZ5q8mNYlY/hqdefault.jpg"
+},
+{
+  title: "Kal Ho Naa Ho",
+  mood: ["lonely", "romantic", "emotional"],
+  language: "hi",
+  line: "Some people love you silently… and leave you smiling through tears.",
+  trailerUrl: "https://www.youtube.com/watch?v=g0eO74UmRBs",
+  thumbnail: "https://img.youtube.com/vi/g0eO74UmRBs/maxresdefault.jpg"
+},
+{
+  title: "Taare Zameen Par",
+  mood: ["lonely", "emotional", "hopeful"],
+  language: "hi",
+  line: "A lonely child, a misunderstood world, and a teacher who finally listens.",
+  trailerUrl: "https://www.youtube.com/watch?v=tn_2Ie_jtX8",
+  thumbnail: "https://img.youtube.com/vi/tn_2Ie_jtX8/maxresdefault.jpg"
+},
+/* =========================
+   HORROR GENRE — 40 MOVIES
+   (20 EN + 20 HI)
+========================= */
+
+/* =========================
+   HORROR — ENGLISH (20)
+========================= */
+
+{
+  title: "The Conjuring",
+  mood: ["Horror", "intense", "dark"],
+  language: "en",
+  line: "A chilling haunted-house case that made horror feel real again.",
+  trailerUrl: "https://www.youtube.com/watch?v=k10ETZ41q5o",
+  thumbnail: "https://img.youtube.com/vi/k10ETZ41q5o/maxresdefault.jpg"
+},
+{
+  title: "The Conjuring 2",
+  mood: ["Horror", "intense", "dark"],
+  language: "en",
+  line: "A terrifying paranormal case with one of the scariest villains ever.",
+  trailerUrl: "https://www.youtube.com/watch?v=VFsmuRPClr4",
+  thumbnail: "https://img.youtube.com/vi/VFsmuRPClr4/maxresdefault.jpg"
+},
+{
+  title: "Insidious",
+  mood: ["Horror", "psychological", "dark"],
+  language: "en",
+  line: "Sleep won’t save you when the danger exists beyond reality.",
+  trailerUrl: "https://www.youtube.com/watch?v=zuZnRUcoWos",
+  thumbnail: "https://img.youtube.com/vi/zuZnRUcoWos/maxresdefault.jpg"
+},
+{
+  title: "Sinister",
+  mood: ["Horror", "dark", "intense"],
+  language: "en",
+  line: "A discovery of tapes unlocks a nightmare that refuses to end.",
+  trailerUrl: "https://www.youtube.com/watch?v=_kbQAJR9YWQ",
+  thumbnail: "https://img.youtube.com/vi/_kbQAJR9YWQ/maxresdefault.jpg"
+},
+{
+  title: "Hereditary",
+  mood: ["Horror", "psychological", "intense"],
+  language: "en",
+  line: "A family tragedy transforms into pure, unstoppable evil.",
+  trailerUrl: "https://www.youtube.com/watch?v=V6wWKNij_1M",
+  thumbnail: "https://img.youtube.com/vi/V6wWKNij_1M/maxresdefault.jpg"
+},
+{
+  title: "The Witch",
+  mood: ["Horror", "dark", "slowburn"],
+  language: "en",
+  line: "A creepy folklore nightmare that builds dread like poison.",
+  trailerUrl: "https://www.youtube.com/watch?v=iQXmlf3Sefg",
+  thumbnail: "https://img.youtube.com/vi/iQXmlf3Sefg/maxresdefault.jpg"
+},
+{
+  title: "It (2017)",
+  mood: ["Horror", "intense"],
+  language: "en",
+  line: "Fear takes shape in the darkest corners of childhood.",
+  trailerUrl: "https://www.youtube.com/watch?v=FnCdOQsX5kc",
+  thumbnail: "https://img.youtube.com/vi/FnCdOQsX5kc/maxresdefault.jpg"
+},
+{
+  title: "A Quiet Place",
+  mood: ["Horror", "intense", "thriller"],
+  language: "en",
+  line: "Silence is survival when monsters can hear everything.",
+  trailerUrl: "https://www.youtube.com/watch?v=WR7cc5t7tv8",
+  thumbnail: "https://img.youtube.com/vi/WR7cc5t7tv8/maxresdefault.jpg"
+},
+{
+  title: "The Ring",
+  mood: ["Horror", "dark", "mystery"],
+  language: "en",
+  line: "One cursed tape. Seven days. No escape.",
+  trailerUrl: "https://youtu.be/uukQ_6szDm8?si=iC1QfGBtuVkIWIkf",
+  thumbnail: "https://img.youtube.com/vi/uukQ_6szDm8/hqdefault.jpg"
+},
+{
+  title: "The Grudge",
+  mood: ["Horror", "dark"],
+  language: "en",
+  line: "A curse passed like a virus — and it never forgives.",
+  trailerUrl: "https://youtu.be/O2NKzO-fxwQ?si=4tljS9gLDmfzC3lJ",
+  thumbnail: "https://img.youtube.com/vi/O2NKzO-fxwQ/hqdefault.jpg"
+},
+{
+  title: "The Exorcist",
+  mood: ["Horror", "classic", "intense"],
+  language: "en",
+  line: "The horror legend that still feels disturbing even today.",
+  trailerUrl: "https://youtu.be/PjD42P7BAaA?si=XUI9z1-mHCJ9E6uI",
+  thumbnail: "https://img.youtube.com/vi/PjD42P7BAaA/hqdefault.jpg"
+},
+{
+  title: "The Shining",
+  mood: ["Horror", "psychological", "classic"],
+  language: "en",
+  line: "Isolation drives madness into something terrifying.",
+  trailerUrl: "https://www.youtube.com/watch?v=FZQvIJxG9Xs",
+  thumbnail: "https://img.youtube.com/vi/FZQvIJxG9Xs/maxresdefault.jpg"
+},
+{
+  title: "Get Out",
+  mood: ["Horror", "psychological", "thoughtful"],
+  language: "en",
+  line: "A smart horror-thriller where the real fear is people.",
+  trailerUrl: "https://www.youtube.com/watch?v=DzfpyUB60YY",
+  thumbnail: "https://img.youtube.com/vi/DzfpyUB60YY/maxresdefault.jpg"
+},
+{
+  title: "The Babadook",
+  mood: ["Horror", "psychological", "dark"],
+  language: "en",
+  line: "Grief becomes a monster that refuses to leave the house.",
+  trailerUrl: "https://www.youtube.com/watch?v=k5WQZzDRVtw",
+  thumbnail: "https://img.youtube.com/vi/k5WQZzDRVtw/maxresdefault.jpg"
+},
+{
+  title: "It Follows",
+  mood: ["Horror", "creepy", "intense"],
+  language: "en",
+  line: "A curse that walks slowly… but will never stop coming.",
+  trailerUrl: "https://www.youtube.com/watch?v=HkZYbOH0ujw",
+  thumbnail: "https://img.youtube.com/vi/HkZYbOH0ujw/maxresdefault.jpg"
+},
+{
+  title: "Paranormal Activity",
+  mood: ["Horror", "foundfootage", "dark"],
+  language: "en",
+  line: "A simple home camera captures fear in its rawest form.",
+  trailerUrl: "https://youtu.be/5od3NGHrXrI?si=NtgeM740FJhgqLpx",
+  thumbnail: "https://img.youtube.com/vi/5od3NGHrXrI/hqdefault.jpg"
+},
+{
+  title: "The Nun",
+  mood: ["Horror", "dark", "intense"],
+  language: "en",
+  line: "Evil takes a holy form… and it’s terrifying.",
+  trailerUrl: "https://www.youtube.com/watch?v=pzD9zGcUNrw",
+  thumbnail: "https://img.youtube.com/vi/pzD9zGcUNrw/maxresdefault.jpg"
+},
+{
+  title: "Annabelle: Creation",
+  mood: ["Horror", "intense", "dark"],
+  language: "en",
+  line: "A doll’s origin story that hits hard with pure dread.",
+  trailerUrl: "https://www.youtube.com/watch?v=KisPhy7T__Q",
+  thumbnail: "https://img.youtube.com/vi/KisPhy7T__Q/maxresdefault.jpg"
+},
+{
+  title: "The Texas Chain Saw Massacre",
+  mood: ["Horror", "classic", "intense"],
+  language: "en",
+  line: "Raw, brutal horror that feels like a nightmare documentary.",
+  trailerUrl: "https://www.youtube.com/watch?v=janre4HxsX4",
+  thumbnail: "https://img.youtube.com/vi/janre4HxsX4/maxresdefault.jpg"
+},
+{
+  title: "Final Destination",
+  mood: ["Horror", "thriller", "dark"],
+  language: "en",
+  line: "You can cheat death… but you can’t escape it.",
+  trailerUrl: "https://youtu.be/x-MR-onocy0?si=XvDlqBN6uVtxzj59",
+  thumbnail: "https://img.youtube.com/vi/x-MR-onocy0/hqdefault.jpg"
+},
+
+/* =========================
+   HORROR — HINDI (20)
+========================= */
+
+{
+  title: "Tumbbad",
+  mood: ["Horror", "dark", "mythology"],
+  language: "hi",
+  line: "A haunting tale of greed, gods, and a curse buried in darkness.",
+  trailerUrl: "https://youtu.be/O9CaB4J4VEI?si=tCee1BQKpOP-aaek",
+  thumbnail: "https://img.youtube.com/vi/O9CaB4J4VEI/maxresdefault.jpg"
+},
+{
+  title: "Stree",
+  mood: ["Horror", "feelgood", "comedy"],
+  language: "hi",
+  line: "A creepy legend with laughs, suspense, and scary surprises.",
+  trailerUrl: "https://www.youtube.com/watch?v=gzeaGcLLl_A",
+  thumbnail: "https://img.youtube.com/vi/gzeaGcLLl_A/maxresdefault.jpg"
+},
+{
+  title: "Bhool Bhulaiyaa",
+  mood: ["Horror", "comedy", "mystery"],
+  language: "hi",
+  line: "A haunted palace mystery with iconic chills and comedy.",
+  trailerUrl: "https://www.youtube.com/watch?v=ss-7iGf1xE8",
+  thumbnail: "https://img.youtube.com/vi/ss-7iGf1xE8/maxresdefault.jpg"
+},
+{
+  title: "Bhool Bhulaiyaa 2",
+  mood: ["Horror", "comedy", "mystery"],
+  language: "hi",
+  line: "A modern spooky ride with twists, laughs, and eerie vibes.",
+  trailerUrl: "https://www.youtube.com/watch?v=P2KRKxAb2ek",
+  thumbnail: "https://img.youtube.com/vi/P2KRKxAb2ek/maxresdefault.jpg"
+},
+{
+  title: "Raaz",
+  mood: ["Horror", "romantic", "dark"],
+  language: "hi",
+  line: "A love story trapped inside a terrifying supernatural secret.",
+  trailerUrl: "https://youtu.be/O6GUoVApVkc?si=l8_XGmFLPBmGlkSE",
+  thumbnail: "https://img.youtube.com/vi/O6GUoVApVkc/hqdefault.jpg"
+},
+{
+  title: "Raaz 2",
+  mood: ["Horror", "dark", "intense"],
+  language: "hi",
+  line: "Possession, mystery, and fear that slowly tightens its grip.",
+  trailerUrl: "https://youtu.be/w0EnghNlD5Y?si=mrgHAPw1WqjcBtHR",
+  thumbnail: "https://img.youtube.com/vi/w0EnghNlD5Y/hqdefault.jpg"
+},
+{
+  title: "1920",
+  mood: ["Horror", "dark", "intense"],
+  language: "hi",
+  line: "A terrifying haunted house where evil refuses to die.",
+  trailerUrl: "https://youtu.be/gugEXnglHP4?si=1DJyCV40YseDkfcB",
+  thumbnail: "https://img.youtube.com/vi/gugEXnglHP4/hqdefault.jpg"
+},
+{
+  title: "1920: Evil Returns",
+  mood: ["Horror", "dark", "intense"],
+  language: "hi",
+  line: "A possession nightmare where faith and fear collide.",
+  trailerUrl: "https://youtu.be/yy1Fdp_h4mM?si=SuLIe7prZRAZng32",
+  thumbnail: "https://img.youtube.com/vi/yy1Fdp_h4mM/maxresdefault.jpg"
+},
+{
+  title: "Bhoot",
+  mood: ["Horror", "classic", "dark"],
+  language: "hi",
+  line: "A haunted apartment story that still scares without cheap tricks.",
+  trailerUrl: "https://youtu.be/zGXrqDEo9aI?si=gh77ncd3Mgg7CM3r",
+  thumbnail: "https://img.youtube.com/vi/zGXrqDEo9aI/hqdefault.jpg"
+},
+{
+  title: "13B",
+  mood: ["Horror", "mystery", "psychological"],
+  language: "hi",
+  line: "A TV show starts predicting real deaths — and the fear becomes personal.",
+  trailerUrl: "https://youtu.be/5jQ0j22PkWA?si=eK9fOTpuq7jonlwg",
+  thumbnail: "https://img.youtube.com/vi/5jQ0j22PkWA/hqdefault.jpg"
+},
+{
+  title: "Darna Mana Hai",
+  mood: ["Horror", "thriller"],
+  language: "hi",
+  line: "Short horror stories that hit you fast and leave you uneasy.",
+  trailerUrl: "https://youtu.be/HMeQgwBm-qA?si=aWdvo28pZPlC6Fzb",
+  thumbnail: "https://img.youtube.com/vi/HMeQgwBm-qA/hqdefault.jpg"
+},
+{
+  title: "Darna Zaroori Hai",
+  mood: ["Horror", "thriller"],
+  language: "hi",
+  line: "A collection of horror tales with creepy twists and surprises.",
+  trailerUrl: "https://youtu.be/nSy2voxFl5c?si=fgeksgLSs0SK9Q2X",
+  thumbnail: "https://img.youtube.com/vi/nSy2voxFl5c/hqdefault.jpg"
+},
+{
+  title: "Pari",
+  mood: ["Horror", "dark", "intense"],
+  language: "hi",
+  line: "Not a fairy tale — a dark story where innocence hides horror.",
+  trailerUrl: "https://www.youtube.com/watch?v=PQKu78NnyvU",
+  thumbnail: "https://img.youtube.com/vi/PQKu78NnyvU/maxresdefault.jpg"
+},
+{
+  title: "Pizza",
+  mood: ["Horror", "thriller", "mystery"],
+  language: "hi",
+  line: "A pizza delivery turns into a terrifying survival story.",
+  trailerUrl: "https://youtu.be/i5GtgmlWTXE?si=9Hy_VbFjgpoY4IkQ",
+  thumbnail: "https://img.youtube.com/vi/i5GtgmlWTXE/hqdefault.jpg"
+},
+{
+  title: "Ragini MMS",
+  mood: ["Horror", "foundfootage", "dark"],
+  language: "hi",
+  line: "A couples trip becomes a paranormal recording of pure fear.",
+  trailerUrl: "https://youtu.be/rjVWWD0QlQU?si=JzIv9IMS9DGOsePR",
+  thumbnail: "https://img.youtube.com/vi/rjVWWD0QlQU/hqdefault.jpg"
+},
+{
+  title: "Ragini MMS 2",
+  mood: ["Horror", "dark", "thriller"],
+  language: "hi",
+  line: "A haunted house with secrets, screams, and unstoppable spirits.",
+  trailerUrl: "https://youtu.be/L-JlgcPidTc?si=cOQ97lwRtMuvdmzK",
+  thumbnail: "https://img.youtube.com/vi/L-JlgcPidTc/hqdefault.jpg"
+},
+{
+  title: "Shaapit",
+  mood: ["Horror", "romantic", "dark"],
+  language: "hi",
+  line: "Love gets cursed when the past refuses to stay buried.",
+  trailerUrl: "https://youtu.be/AKJULWMO2Ks?si=RksGG04OiqAWVWqC",
+  thumbnail: "https://img.youtube.com/vi/AKJULWMO2Ks/hqdefault.jpg"
+},
+{
+  title: "Haunted 3D",
+  mood: ["Horror", "dark", "intense"],
+  language: "hi",
+  line: "A haunted house and a voice begging for help from the shadows.",
+  trailerUrl: "https://youtu.be/1g8a96rw-Jc?si=Rv2lHXBchnfA4eGs",
+  thumbnail: "https://img.youtube.com/vi/1g8a96rw-Jc/hqdefault.jpg"
+},
+{
+  title: "Creature 3D",
+  mood: ["Horror", "monster", "intense"],
+  language: "hi",
+  line: "A deadly creature turns a peaceful getaway into a nightmare.",
+  trailerUrl: "https://youtu.be/kqER_Qt2_2g?si=fiMb6iO0wavP1xZ1",
+  thumbnail: "https://img.youtube.com/vi/kqER_Qt2_2g/hqdefault.jpg"
+},
+{
+  title: "Bhediya",
+  mood: ["Horror", "monster", "feelgood"],
+  language: "hi",
+  line: "A werewolf twist with horror, humor, and slick visuals.",
+  trailerUrl: "https://youtu.be/d_BPlvbw_ok?si=YF8354rkdC3gYLJi",
+  thumbnail: "https://img.youtube.com/vi/d_BPlvbw_ok/maxresdefault.jpg"
+},
+/* =========================
+   TONIGHT’S PICKS — 40 MOVIES
+   (20 EN + 20 HI)
+   Best for: Stress relief, chill vibes, fun, comfort
+========================= */
+
+/* =========================
+   TONIGHT’S PICKS — ENGLISH (20)
+========================= */
+
+{
+  title: "The Hangover",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "en",
+  line: "A chaotic bachelor night that turns into the funniest mystery ever.",
+  trailerUrl: "https://www.youtube.com/watch?v=tcdUhdOlz9M",
+  thumbnail: "https://img.youtube.com/vi/tcdUhdOlz9M/maxresdefault.jpg"
+},
+{
+  title: "Rush Hour",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "en",
+  line: "Buddy-cop action + comedy that feels like instant stress relief.",
+  trailerUrl: "https://www.youtube.com/watch?v=JMiFsFQcFLE",
+  thumbnail: "https://img.youtube.com/vi/JMiFsFQcFLE/maxresdefault.jpg"
+},
+{
+  title: "Rush Hour 2",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "en",
+  line: "More action, more jokes, and the duo is even funnier this time.",
+  trailerUrl: "https://www.youtube.com/watch?v=SCTzYY95Aw4",
+  thumbnail: "https://img.youtube.com/vi/SCTzYY95Aw4/maxresdefault.jpg"
+},
+{
+  title: "21 Jump Street",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "en",
+  line: "Two cops go back to school and everything becomes comedy gold.",
+  trailerUrl: "https://www.youtube.com/watch?v=RLoKtb4c4W0",
+  thumbnail: "https://img.youtube.com/vi/RLoKtb4c4W0/maxresdefault.jpg"
+},
+{
+  title: "22 Jump Street",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "en",
+  line: "Same duo, bigger chaos — and somehow even more hilarious.",
+  trailerUrl: "https://www.youtube.com/watch?v=qP755JkDxyM",
+  thumbnail: "https://img.youtube.com/vi/qP755JkDxyM/maxresdefault.jpg"
+},
+{
+  title: "Deadpool",
+  mood: ["Tonight’s Picks", "intense", "feelgood"],
+  language: "en",
+  line: "Violent, funny, and insanely entertaining — the perfect stress killer.",
+  trailerUrl: "https://www.youtube.com/watch?v=ONHBaC-pfsk",
+  thumbnail: "https://img.youtube.com/vi/ONHBaC-pfsk/maxresdefault.jpg"
+},
+{
+  title: "Deadpool 2",
+  mood: ["Tonight’s Picks", "intense", "feelgood"],
+  language: "en",
+  line: "More jokes, more action, more madness — total fun.",
+  trailerUrl: "https://www.youtube.com/watch?v=D86RtevtfrA",
+  thumbnail: "https://img.youtube.com/vi/D86RtevtfrA/maxresdefault.jpg"
+},
+{
+  title: "John Wick",
+  mood: ["Tonight’s Picks", "intense", "comfort"],
+  language: "en",
+  line: "Pure satisfying action when you just want the world to shut up.",
+  trailerUrl: "https://www.youtube.com/watch?v=C0BMx-qxsP4",
+  thumbnail: "https://img.youtube.com/vi/C0BMx-qxsP4/maxresdefault.jpg"
+},
+{
+  title: "The Dark Knight",
+  mood: ["Tonight’s Picks", "intense", "thoughtful"],
+  language: "en",
+  line: "A legendary superhero thriller that keeps you locked in every minute.",
+  trailerUrl: "https://www.youtube.com/watch?v=EXeTwQWrcwY",
+  thumbnail: "https://img.youtube.com/vi/EXeTwQWrcwY/maxresdefault.jpg"
+},
+{
+  title: "Spider-Man: Into the Spider-Verse",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "en",
+  line: "Stylish, fun, and full of energy — a perfect night movie.",
+  trailerUrl: "https://www.youtube.com/watch?v=g4Hbz2jLxvQ",
+  thumbnail: "https://img.youtube.com/vi/g4Hbz2jLxvQ/maxresdefault.jpg"
+},
+{
+  title: "The Avengers",
+  mood: ["Tonight’s Picks", "feelgood", "intense"],
+  language: "en",
+  line: "A full-on blockbuster ride that feels like dopamine on screen.",
+  trailerUrl: "https://www.youtube.com/watch?v=eOrNdBpGMv8",
+  thumbnail: "https://img.youtube.com/vi/eOrNdBpGMv8/maxresdefault.jpg"
+},
+{
+  title: "Thor: Ragnarok",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "en",
+  line: "Comedy + action + insane visuals — the ultimate fun combo.",
+  trailerUrl: "https://www.youtube.com/watch?v=ue80QwXMRHg",
+  thumbnail: "https://img.youtube.com/vi/ue80QwXMRHg/maxresdefault.jpg"
+},
+{
+  title: "Mad Max: Fury Road",
+  mood: ["Tonight’s Picks", "intense", "adrenaline"],
+  language: "en",
+  line: "Non-stop action that resets your brain after a long day.",
+  trailerUrl: "https://www.youtube.com/watch?v=hEJnMQG9ev8",
+  thumbnail: "https://img.youtube.com/vi/hEJnMQG9ev8/maxresdefault.jpg"
+},
+{
+  title: "Baby Driver",
+  mood: ["Tonight’s Picks", "feelgood", "intense"],
+  language: "en",
+  line: "Music, cars, style — the coolest stress-free thriller ever.",
+  trailerUrl: "https://www.youtube.com/watch?v=z2z857RSfhk",
+  thumbnail: "https://img.youtube.com/vi/z2z857RSfhk/maxresdefault.jpg"
+},
+{
+  title: "The Secret Life of Walter Mitty",
+  mood: ["Tonight’s Picks", "comfort", "inspiring"],
+  language: "en",
+  line: "A calm, beautiful movie that makes life feel lighter.",
+  trailerUrl: "https://www.youtube.com/watch?v=QD6cy4PBQPI",
+  thumbnail: "https://img.youtube.com/vi/QD6cy4PBQPI/maxresdefault.jpg"
+},
+{
+  title: "The Intern",
+  mood: ["Tonight’s Picks", "comfort", "feelgood"],
+  language: "en",
+  line: "A wholesome movie that feels like a warm cup of tea at night.",
+  trailerUrl: "https://www.youtube.com/watch?v=ZU3Xban0Y6A",
+  thumbnail: "https://img.youtube.com/vi/ZU3Xban0Y6A/maxresdefault.jpg"
+},
+{
+  title: "Chef",
+  mood: ["Tonight’s Picks", "comfort", "feelgood"],
+  language: "en",
+  line: "Food, family, and fresh starts — pure feel-good vibes.",
+  trailerUrl: "https://www.youtube.com/watch?v=FF_rYNupPwg",
+  thumbnail: "https://img.youtube.com/vi/FF_rYNupPwg/maxresdefault.jpg"
+},
+{
+  title: "Ford v Ferrari",
+  mood: ["Tonight’s Picks", "intense", "inspiring"],
+  language: "en",
+  line: "Fast cars, brotherhood, and pure adrenaline satisfaction.",
+  trailerUrl: "https://www.youtube.com/watch?v=zyYgDtY2AMY",
+  thumbnail: "https://img.youtube.com/vi/zyYgDtY2AMY/maxresdefault.jpg"
+},
+{
+  title: "Top Gun: Maverick",
+  mood: ["Tonight’s Picks", "intense", "feelgood"],
+  language: "en",
+  line: "The ultimate crowd-pleaser — action, emotions, and badass energy.",
+  trailerUrl: "https://www.youtube.com/watch?v=giXco2jaZ_4",
+  thumbnail: "https://img.youtube.com/vi/giXco2jaZ_4/maxresdefault.jpg"
+},
+{
+  title: "Free Guy",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "en",
+  line: "A fun, light movie that feels like gaming + comedy + heart.",
+  trailerUrl: "https://www.youtube.com/watch?v=X2m-08cOAbc",
+  thumbnail: "https://img.youtube.com/vi/X2m-08cOAbc/maxresdefault.jpg"
+},
+
+/* =========================
+   TONIGHT’S PICKS — HINDI (20)
+========================= */
+
+{
+  title: "Hera Pheri",
+  mood: ["Tonight’s Picks", "comfort", "feelgood"],
+  language: "hi",
+  line: "Stress? Gone. This comedy is legendary in every scene.",
+  trailerUrl: "https://youtu.be/m1zMmVwWr-M?si=CysJ1524t6hX4op-",
+  thumbnail: "https://img.youtube.com/vi/m1zMmVwWr-M/maxresdefault.jpg"
+},
+{
+  title: "Phir Hera Pheri",
+  mood: ["Tonight’s Picks", "comfort", "feelgood"],
+  language: "hi",
+  line: "More chaos, more comedy, more iconic moments — full entertainment.",
+  trailerUrl: "https://youtu.be/Im_lCAsA27Q?si=sI2z_r2TjEZL4obH",
+  thumbnail: "https://img.youtube.com/vi/Im_lCAsA27Q/maxresdefault.jpg"
+},
+{
+  title: "Welcome",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "hi",
+  line: "A mad comedy ride that feels like stress relief in movie form.",
+  trailerUrl: "https://youtu.be/dEjN98Io4gs?si=PLBQT6Vs9xICzIBz",
+  thumbnail: "https://img.youtube.com/vi/dEjN98Io4gs/hqdefault.jpg"
+},
+{
+  title: "Golmaal: Fun Unlimited",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "hi",
+  line: "Pure comedy madness — perfect for switching off your brain.",
+  trailerUrl: "https://youtu.be/A1-PEkuuWi8?si=k0PQCNuVyFrSw91f",
+  thumbnail: "https://img.youtube.com/vi/A1-PEkuuWi8/hqdefault.jpg"
+},
+{
+  title: "Golmaal Returns",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "hi",
+  line: "More jokes and chaos — a perfect stress-free laugh session.",
+  trailerUrl: "https://youtu.be/-EruXHkL9us?si=Bo0pSZLl9GD26Bfh",
+  thumbnail: "https://img.youtube.com/vi/-EruXHkL9us/hqdefault.jpg"
+},
+{
+  title: "Andhadhun",
+  mood: ["Tonight’s Picks", "intense", "thriller"],
+  language: "hi",
+  line: "A stylish thriller that keeps your mind hooked without draining you.",
+  trailerUrl: "https://www.youtube.com/watch?v=2iVYI99VGaw",
+  thumbnail: "https://img.youtube.com/vi/2iVYI99VGaw/maxresdefault.jpg"
+},
+{
+  title: "Drishyam",
+  mood: ["Tonight’s Picks", "intense", "thoughtful"],
+  language: "hi",
+  line: "A gripping thriller that feels satisfying till the very last scene.",
+  trailerUrl: "https://youtu.be/64xJLmcA2K8?si=PbUaDVZVnZoBawrh",
+  thumbnail: "https://img.youtube.com/vi/64xJLmcA2K8/maxresdefault.jpg"
+},
+{
+  title: "Bhool Bhulaiyaa",
+  mood: ["Tonight’s Picks", "horror", "comedy"],
+  language: "hi",
+  line: "Scary, funny, and iconic — the perfect night watch combo.",
+  trailerUrl: "https://www.youtube.com/watch?v=ss-7iGf1xE8",
+  thumbnail: "https://img.youtube.com/vi/ss-7iGf1xE8/maxresdefault.jpg"
+},
+{
+  title: "Stree",
+  mood: ["Tonight’s Picks", "horror", "feelgood"],
+  language: "hi",
+  line: "A horror-comedy that’s weirdly comforting and super fun.",
+  trailerUrl: "https://www.youtube.com/watch?v=gzeaGcLLl_A",
+  thumbnail: "https://img.youtube.com/vi/gzeaGcLLl_A/maxresdefault.jpg"
+},
+{
+  title: "3 Idiots",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "hi",
+  line: "Motivation + comedy + friendship — unbeatable night movie.",
+  trailerUrl: "https://www.youtube.com/watch?v=K0eDlFX9GMc",
+  thumbnail: "https://img.youtube.com/vi/K0eDlFX9GMc/maxresdefault.jpg"
+},
+{
+  title: "Zindagi Na Milegi Dobara",
+  mood: ["Tonight’s Picks", "comfort", "feelgood"],
+  language: "hi",
+  line: "A perfect escape movie that makes you breathe again.",
+  trailerUrl: "https://www.youtube.com/watch?v=FJrpcDgC3zU",
+  thumbnail: "https://img.youtube.com/vi/FJrpcDgC3zU/maxresdefault.jpg"
+},
+{
+  title: "Dil Chahta Hai",
+  mood: ["Tonight’s Picks", "comfort", "feelgood"],
+  language: "hi",
+  line: "Friendship and life vibes that feel timeless after a stressful day.",
+  trailerUrl: "https://youtu.be/OBAcYSSUf6o?si=HVPRJYpk4QxtQ08I",
+  thumbnail: "https://img.youtube.com/vi/OBAcYSSUf6o/maxresdefault.jpg"
+},
+{
+  title: "Wake Up Sid",
+  mood: ["Tonight’s Picks", "comfort", "feelgood"],
+  language: "hi",
+  line: "A calm movie about growing up at your own pace — soothing and real.",
+  trailerUrl: "https://youtu.be/Ngimy3GpHS0?si=lDS625SW8CW8uG0N",
+  thumbnail: "https://img.youtube.com/vi/Ngimy3GpHS0/maxresdefault.jpg"
+},
+{
+  title: "Queen",
+  mood: ["Tonight’s Picks", "comfort", "inspiring"],
+  language: "hi",
+  line: "A movie that makes you feel stronger without being preachy.",
+  trailerUrl: "https://youtu.be/Kj9jAHUIH_8?si=EiE2tU2mKGZKIeFg",
+  thumbnail: "https://img.youtube.com/vi/Kj9jAHUIH_8/maxresdefault.jpg"
+},
+{
+  title: "Yeh Jawaani Hai Deewani",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "hi",
+  line: "Friendship, fun, and romance — perfect for night vibes.",
+  trailerUrl: "https://www.youtube.com/watch?v=Rbp2XUSeUNE",
+  thumbnail: "https://img.youtube.com/vi/Rbp2XUSeUNE/maxresdefault.jpg"
+},
+{
+  title: "Jab We Met",
+  mood: ["Tonight’s Picks", "comfort", "feelgood"],
+  language: "hi",
+  line: "Light, funny, romantic — it always feels like a warm rewatch.",
+  trailerUrl: "https://youtu.be/UDjCsnT4lBI?si=W4gDzRrZUuKtVjt3",
+  thumbnail: "https://img.youtube.com/vi/UDjCsnT4lBI/maxresdefault.jpg"
+},
+{
+  title: "Barfi!",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "hi",
+  line: "A soft, sweet movie that makes your heart feel clean again.",
+  trailerUrl: "https://youtu.be/DOhZXeMKk1A?si=E3sxeBbqMDoFCsQ8",
+  thumbnail: "https://img.youtube.com/vi/DOhZXeMKk1A/maxresdefault.jpg"
+},
+{
+  title: "Fukrey",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "hi",
+  line: "Timepass done right — full fun, full laughter, full vibes.",
+  trailerUrl: "https://youtu.be/V9qgeeO7tMk?si=UuTm2Md2CswCpd13",
+  thumbnail: "https://img.youtube.com/vi/V9qgeeO7tMk/maxresdefault.jpg"
+},
+{
+  title: "Chhichhore",
+  mood: ["Tonight’s Picks", "feelgood", "comfort"],
+  language: "hi",
+  line: "A comforting reminder that life is bigger than just results.",
+  trailerUrl: "https://www.youtube.com/watch?v=tsxemFX0a7k",
+  thumbnail: "https://img.youtube.com/vi/tsxemFX0a7k/maxresdefault.jpg"
+},
+{
+  title: "MS Dhoni: The Untold Story",
+  mood: ["Tonight’s Picks", "comfort", "inspiring"],
+  language: "hi",
+  line: "A motivational ride that hits hardest when you feel tired and stuck.",
+  trailerUrl: "https://www.youtube.com/watch?v=6L6XqWoS8tw",
+  thumbnail: "https://img.youtube.com/vi/6L6XqWoS8tw/maxresdefault.jpg"
+},
+/* =========================
+   COMEDY GENRE — 40 MOVIES
+   (20 EN + 20 HI)
+========================= */
+
+/* =========================
+   COMEDY — ENGLISH (20)
+========================= */
+
+{
+  title: "The Hangover",
+  mood: ["Comedy", "Tonight’s Picks", "feelgood"],
+  language: "en",
+  line: "A wild night turns into the funniest disaster mystery ever.",
+  trailerUrl: "https://www.youtube.com/watch?v=tcdUhdOlz9M",
+  thumbnail: "https://img.youtube.com/vi/tcdUhdOlz9M/maxresdefault.jpg"
+},
+{
+  title: "The Hangover Part II",
+  mood: ["Comedy", "feelgood"],
+  language: "en",
+  line: "Same chaos, new city — and somehow even worse decisions.",
+  trailerUrl: "https://www.youtube.com/watch?v=ohF5ZO_zOYU",
+  thumbnail: "https://img.youtube.com/vi/ohF5ZO_zOYU/hqdefault.jpg"
+},
+{
+  title: "21 Jump Street",
+  mood: ["Comedy", "feelgood", "comfort"],
+  language: "en",
+  line: "Two cops go undercover in school and everything becomes comedy gold.",
+  trailerUrl: "https://www.youtube.com/watch?v=RLoKtb4c4W0",
+  thumbnail: "https://img.youtube.com/vi/RLoKtb4c4W0/maxresdefault.jpg"
+},
+{
+  title: "22 Jump Street",
+  mood: ["Comedy", "feelgood", "comfort"],
+  language: "en",
+  line: "Bigger mission, bigger jokes — and nonstop madness.",
+  trailerUrl: "https://www.youtube.com/watch?v=qP755JkDxyM",
+  thumbnail: "https://img.youtube.com/vi/qP755JkDxyM/maxresdefault.jpg"
+},
+{
+  title: "Superbad",
+  mood: ["Comedy", "feelgood"],
+  language: "en",
+  line: "Teen chaos, best-friends energy, and legendary comedy moments.",
+  trailerUrl: "https://www.youtube.com/watch?v=4eaZ_48ZYog",
+  thumbnail: "https://img.youtube.com/vi/4eaZ_48ZYog/maxresdefault.jpg"
+},
+{
+  title: "Step Brothers",
+  mood: ["Comedy", "comfort"],
+  language: "en",
+  line: "Two grown men act like kids and it becomes peak comedy.",
+  trailerUrl: "https://www.youtube.com/watch?v=CewglxElBK0",
+  thumbnail: "https://img.youtube.com/vi/CewglxElBK0/maxresdefault.jpg"
+},
+{
+  title: "The Mask",
+  mood: ["Comedy", "feelgood"],
+  language: "en",
+  line: "A magical mask turns an ordinary guy into pure cartoon madness.",
+  trailerUrl: "https://www.youtube.com/watch?v=LZl69yk5lEY",
+  thumbnail: "https://img.youtube.com/vi/LZl69yk5lEY/maxresdefault.jpg"
+},
+{
+  title: "Dumb and Dumber",
+  mood: ["Comedy", "feelgood"],
+  language: "en",
+  line: "Two idiots, one road trip, and unlimited stupid fun.",
+  trailerUrl: "https://www.youtube.com/watch?v=l13yPhimE3o",
+  thumbnail: "https://img.youtube.com/vi/l13yPhimE3o/maxresdefault.jpg"
+},
+{
+  title: "Home Alone",
+  mood: ["Comedy", "comfort", "feelgood"],
+  language: "en",
+  line: "A kid vs burglars — and it never gets old.",
+  trailerUrl: "https://www.youtube.com/watch?v=jEDaVHmw7r4",
+  thumbnail: "https://img.youtube.com/vi/jEDaVHmw7r4/maxresdefault.jpg"
+},
+{
+  title: "Home Alone 2: Lost in New York",
+  mood: ["Comedy", "comfort", "feelgood"],
+  language: "en",
+  line: "New York chaos, same burglars, double the fun.",
+  trailerUrl: "https://www.youtube.com/watch?v=5h9VDUNtoto",
+  thumbnail: "https://img.youtube.com/vi/5h9VDUNtoto/maxresdefault.jpg"
+},
+{
+  title: "Jumanji: Welcome to the Jungle",
+  mood: ["Comedy", "Tonight’s Picks", "feelgood"],
+  language: "en",
+  line: "Adventure + comedy that feels like a fun gaming night.",
+  trailerUrl: "https://www.youtube.com/watch?v=2QKg5SZ_35I",
+  thumbnail: "https://img.youtube.com/vi/2QKg5SZ_35I/maxresdefault.jpg"
+},
+{
+  title: "Jumanji: The Next Level",
+  mood: ["Comedy", "feelgood"],
+  language: "en",
+  line: "The game gets crazier, and the laughs get bigger.",
+  trailerUrl: "https://www.youtube.com/watch?v=rBxcF-r9Ibs",
+  thumbnail: "https://img.youtube.com/vi/rBxcF-r9Ibs/maxresdefault.jpg"
+},
+{
+  title: "Free Guy",
+  mood: ["Comedy", "feelgood", "comfort"],
+  language: "en",
+  line: "A feel-good comedy that feels like living inside a video game.",
+  trailerUrl: "https://www.youtube.com/watch?v=X2m-08cOAbc",
+  thumbnail: "https://img.youtube.com/vi/X2m-08cOAbc/maxresdefault.jpg"
+},
+{
+  title: "We’re the Millers",
+  mood: ["Comedy", "feelgood"],
+  language: "en",
+  line: "A fake family road trip that turns into nonstop chaos.",
+  trailerUrl: "https://www.youtube.com/watch?v=0Vsy5KzsieQ",
+  thumbnail: "https://img.youtube.com/vi/0Vsy5KzsieQ/maxresdefault.jpg"
+},
+{
+  title: "The Intern",
+  mood: ["Comedy", "comfort", "feelgood"],
+  language: "en",
+  line: "Wholesome, funny, and honestly relaxing to watch.",
+  trailerUrl: "https://www.youtube.com/watch?v=ZU3Xban0Y6A",
+  thumbnail: "https://img.youtube.com/vi/ZU3Xban0Y6A/maxresdefault.jpg"
+},
+{
+  title: "Bruce Almighty",
+  mood: ["Comedy", "feelgood"],
+  language: "en",
+  line: "A man gets God’s powers and immediately starts acting like a kid.",
+  trailerUrl: "https://www.youtube.com/watch?v=fe-luzrqWSk",
+  thumbnail: "https://img.youtube.com/vi/fe-luzrqWSk/maxresdefault.jpg"
+},
+{
+  title: "Yes Man",
+  mood: ["Comedy", "feelgood", "comfort"],
+  language: "en",
+  line: "Say yes to everything — and watch life go insane in the best way.",
+  trailerUrl: "https://www.youtube.com/watch?v=dDh1l3qVNoY",
+  thumbnail: "https://img.youtube.com/vi/dDh1l3qVNoY/maxresdefault.jpg"
+},
+{
+  title: "Mean Girls",
+  mood: ["Comedy", "feelgood"],
+  language: "en",
+  line: "Iconic comedy with savage humor and endless quotable scenes.",
+  trailerUrl: "https://www.youtube.com/watch?v=oDU84nmSDZY",
+  thumbnail: "https://img.youtube.com/vi/oDU84nmSDZY/maxresdefault.jpg"
+},
+{
+  title: "The Dictator",
+  mood: ["Comedy", "wild"],
+  language: "en",
+  line: "Ridiculous, chaotic, and completely unfiltered comedy.",
+  trailerUrl: "https://www.youtube.com/watch?v=cYplvwBvGA4",
+  thumbnail: "https://img.youtube.com/vi/cYplvwBvGA4/maxresdefault.jpg"
+},
+{
+  title: "Zombieland",
+  mood: ["Comedy", "intense", "feelgood"],
+  language: "en",
+  line: "Zombie apocalypse… but make it funny and cool.",
+  trailerUrl: "https://www.youtube.com/watch?v=8m9EVP8X7N8",
+  thumbnail: "https://img.youtube.com/vi/8m9EVP8X7N8/maxresdefault.jpg"
+},
+
+/* =========================
+   COMEDY — HINDI (20)
+========================= */
+  {
+    title: "Hera Pheri",
+    mood: ["Comedy", "comfort", "feelgood"],
+    language: "hi",
+    line: "The OG comedy classic that never fails to cure stress.",
+    trailerUrl: "https://www.youtube.com/watch?v=TIQ5hrfermg",
+    thumbnail: "https://img.youtube.com/vi/TIQ5hrfermg/maxresdefault.jpg"
+  },
+  {
+    title: "Phir Hera Pheri",
+    mood: ["Comedy", "comfort", "feelgood"],
+    language: "hi",
+    line: "Double the madness, double the laughter — pure entertainment.",
+    trailerUrl: "https://youtu.be/TmxYlA26Jr4?si=MeFVbKlSIblAe6IP",
+    thumbnail: "https://img.youtube.com/vi/TmxYlA26Jr4/maxresdefault.jpg"
+  },
+  {
+    title: "Welcome",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "Iconic characters, nonstop jokes, and total chaos.",
+    trailerUrl: "https://youtu.be/QJCMdzuLG0I?si=n3hH22lTtVxNidd8",
+    thumbnail: "https://img.youtube.com/vi/QJCMdzuLG0I/hqdefault.jpg"
+  },
+  {
+    title: "Welcome Back",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "More madness, more gangs, more hilarious confusion.",
+    trailerUrl: "https://youtu.be/SIKfSPbsuyw?si=rPrt389x9qGoHwK0",
+    thumbnail: "https://img.youtube.com/vi/SIKfSPbsuyw/maxresdefault.jpg"
+  },
+  {
+    title: "Bhagam Bhag",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "Fast-paced comedy where confusion becomes the main hero.",
+    trailerUrl: "https://youtu.be/ihCaohTJYCo?si=rbKkGlBcWpy6VGCc",
+    thumbnail: "https://img.youtube.com/vi/ihCaohTJYCo/maxresdefault.jpg"
+  },
+  {
+    title: "Golmaal: Fun Unlimited",
+    mood: ["Comedy", "comfort", "feelgood"],
+    language: "hi",
+    line: "The kind of comedy that fixes your mood instantly.",
+    trailerUrl: "https://youtu.be/A1-PEkuuWi8?si=GzICOaskJSRcCw3i",
+    thumbnail: "https://img.youtube.com/vi/A1-PEkuuWi8/hqdefault.jpg"
+  },
+  {
+    title: "Golmaal Returns",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "More drama, more madness, and nonstop entertainment.",
+    trailerUrl: "https://youtu.be/jAw46WCmTN4?si=WXgXpc_bmr7qbVpC",
+    thumbnail: "https://img.youtube.com/vi/jAw46WCmTN4/hqdefault.jpg"
+  },
+  {
+    title: "Golmaal 3",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "A loud and fun comedy ride that’s perfect for chill nights.",
+    trailerUrl: "https://youtu.be/oFerQZDEn8E?si=VzOLq1hOSeAG_vPX",
+    thumbnail: "https://img.youtube.com/vi/oFerQZDEn8E/hqdefault.jpg"
+  },
+  {
+    title: "Dhamaal",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "Treasure hunt comedy with peak chaos and iconic moments.",
+    trailerUrl: "https://youtu.be/D7felvV3JRc?si=-DE91vzh45WpDPfP",
+    thumbnail: "https://img.youtube.com/vi/D7felvV3JRc/hqdefault.jpg"
+  },
+  {
+    title: "Double Dhamaal",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "Revenge + comedy + stupidity — exactly what you want after stress.",
+    trailerUrl: "https://youtu.be/fo9EhcwQXcM?si=-VmdnFaV64VqAOfQ",
+    thumbnail: "https://img.youtube.com/vi/fo9EhcwQXcM/hqdefault.jpg"
+  },
+  {
+    title: "Housefull",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "Comedy of errors where every scene is chaos.",
+    trailerUrl: "https://youtu.be/oqPZHVekBZ0?si=BkyCi0PpAEws31gq",
+    thumbnail: "https://img.youtube.com/vi/oqPZHVekBZ0/hqdefault.jpg"
+  },
+  {
+    title: "Housefull 2",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "Bigger cast, bigger confusion, bigger laughs.",
+    trailerUrl: "https://youtu.be/H40CULLKIyM?si=P-yB7KmyoRJqKSkq",
+    thumbnail: "https://img.youtube.com/vi/H40CULLKIyM/hqdefault.jpg"
+  },
+  {
+    title: "Housefull 3",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "A full-on comedy entertainer made for chill nights.",
+    trailerUrl: "https://youtu.be/TlZM9kuqw38?si=ZmYeVvoQWpUfWLLh",
+    thumbnail: "https://img.youtube.com/vi/TlZM9kuqw38/hqdefault.jpg"
+  },
+  {
+    title: "Fukrey",
+    mood: ["Comedy", "comfort", "feelgood"],
+    language: "hi",
+    line: "Delhi boys, jugaad life, and endless laughs.",
+    trailerUrl: "https://youtu.be/V9qgeeO7tMk?si=k1-Plvd5sfgi8fSL",
+    thumbnail: "https://img.youtube.com/vi/V9qgeeO7tMk/hqdefault.jpg"
+  },
+  {
+    title: "Fukrey Returns",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "More craziness, more fun, and the gang is back stronger.",
+    trailerUrl: "https://youtu.be/f-UzOpuKOVY?si=Hg0nGE5yVs-_J6E-",
+    thumbnail: "https://img.youtube.com/vi/f-UzOpuKOVY/hqdefault.jpg"
+  },
+  {
+    title: "Chup Chup Ke",
+    mood: ["Comedy", "comfort"],
+    language: "hi",
+    line: "A hilarious comedy where lies keep getting bigger.",
+    trailerUrl: "https://youtu.be/CZwUzVuIz58?si=b7O-3kMLMnZazIXH",
+    thumbnail: "https://img.youtube.com/vi/CZwUzVuIz58/hqdefault.jpg"
+  },
+  {
+    title: "De Dana Dan",
+    mood: ["Comedy", "feelgood"],
+    language: "hi",
+    line: "Nonstop comedy chaos with full timepass energy.",
+    trailerUrl: "https://youtu.be/VMOlmpDS5O4?si=qV2EgksQYXgNDAL9",
+    thumbnail: "https://img.youtube.com/vi/VMOlmpDS5O4/hqdefault.jpg"
+  },
+  {
+    title: "Hungama",
+    mood: ["Comedy", "comfort"],
+    language: "hi",
+    line: "Old-school comedy full of misunderstandings and laughter.",
+    trailerUrl: "https://youtu.be/55sUfITkuVY?si=FHG54K-e6eIRg0s2",
+    thumbnail: "https://img.youtube.com/vi/55sUfITkuVY/hqdefault.jpg"
+  },
+  {
+    title: "Bheja Fry",
+    mood: ["Comedy", "comfort"],
+    language: "hi",
+    line: "A simple evening goes hilariously wrong in the best way.",
+    trailerUrl: "https://youtu.be/XyILMg7g6wk?si=34qbFXYvxop66Cfy",
+    thumbnail: "https://img.youtube.com/vi/XyILMg7g6wk/hqdefault.jpg"
+  },
+  {
+    title: "Munna Bhai M.B.B.S.",
+    mood: ["Comedy", "comfort", "feelgood"],
+    language: "hi",
+    line: "Comedy with heart — the perfect stress-free classic.",
+    trailerUrl: "https://youtu.be/6f-EaUWCua0?si=6FSD0VIvyg61vzoz",
+    thumbnail: "https://img.youtube.com/vi/6f-EaUWCua0/hqdefault.jpg"
+  }
+];
+
+
+  let currentMood = "";
+  let currentLanguage = "en";
+
+  /* =========================
+     UTILS
+  ========================= */
+  function shuffleArray(arr) {
+    return arr.sort(() => Math.random() - 0.5);
+  }
+
+  function getMoviesByMood(mood, language) {
+    const filtered = movies.filter(m =>
+      m.mood.includes(mood) && m.language === language
+    );
+    return shuffleArray([...filtered]).slice(0, 3);
+  }
+
+  /* =========================
+   DISPLAY RESULTS (TRAILER)
+========================= */
+function showResults(list) {
+  const results = document.getElementById("results");
+  results.innerHTML = "";
+
+  list.forEach((movie, index) => {   // ✅ index added
+    const card = document.createElement("div");
+    card.className = "movie-card";
+
+    // 🎬 stagger animation
+    card.style.setProperty("--delay", `${index * 0.15}s`);
+
+    card.innerHTML = `
+      <div class="trailer-thumb">
+        <a href="${movie.trailerUrl}" target="_blank" rel="noopener">
+          <img src="${movie.thumbnail}" alt="${movie.title} trailer">
+          <div class="play-btn">▶</div>
+        </a>
+      </div>
+
+      <h3 class="glassy-gold movie-title">${movie.title}</h3>
+      <p>${movie.line}</p>
+    `;
+
+    results.appendChild(card);       // ✅ REQUIRED
+  });
+
+  document.getElementById("reloadBtn").style.display = "block";
+}
+
+
+  /* =========================
+     PLAY TRAILER ON CLICK
+  ========================= */
+  document.addEventListener("click", (e) => {
+    const thumb = e.target.closest(".trailer-thumb");
+    if (!thumb) return;
+
+    const id = thumb.dataset.id;
+    thumb.innerHTML = `
+      <iframe
+        src="https://www.youtube.com/embed/${id}?autoplay=1"
+        frameborder="0"
+        allow="autoplay; encrypted-media"
+        allowfullscreen>
+      </iframe>
+    `;
+  });
+
+  /* =========================
+     MOOD CLICK
+  ========================= */
+  document.querySelectorAll(".mood-chip").forEach(btn => {
+    btn.addEventListener("click", () => {
+      currentMood = btn.dataset.mood;
+      showResults(getMoviesByMood(currentMood, currentLanguage));
+    });
+  });
+
+document.querySelectorAll(".lang-btn").forEach(btn => {
+  btn.addEventListener("click", () => {
+    clickSound.currentTime = 0;
+    clickSound.volume = 0.35;
+    clickSound.play();
+  });
+});
+
+  /* =========================
+     LANGUAGE SELECT
+  ========================= */
+  document.querySelectorAll(".lang-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".lang-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentLanguage = btn.dataset.lang;
+    });
+  });
+  
+ /* =========================
+   RELOAD (with click sound)
+========================= */
+document.getElementById("reloadBtn").addEventListener("click", () => {
+
+  // ✅ click sound
+  clickSound.currentTime = 0;
+  clickSound.volume = 0.4;
+  clickSound.play();
+
+  // ✅ reload results
+  showResults(getMoviesByMood(currentMood, currentLanguage));
+});
+
+
+});
+</script>
+</body>
+</html>
+
+
+
+
