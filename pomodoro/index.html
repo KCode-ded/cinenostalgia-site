@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description"
+content="Focus Room is a free online Pomodoro timer with focus sessions, break timer, ambient sounds, fullscreen mode, and productivity tracking.">
+<meta name="keywords"
+content="pomodoro timer, study timer, focus timer, study online, productivity timer, forest ambient, online pomodoro, study with focus">
+<meta property="og:title"
+content="Focus Room - Online Pomodoro Timer">
+
+<link rel="canonical" href="https://cinenostalgia.in/pomodoro/">
+<link rel="icon" href="favicon.png" type="image/png">
+<meta name="author" content="KK">
+
+<meta property="og:description"
+content="Beautiful Pomodoro timer with ambient sounds and focus tracking.">
+
+<meta property="og:image"
+content="https://cinenostalgia.in/pomodoro/preview.png">
+
+<meta property="og:type"
+content="website">
+<meta property="og:site_name"
+content="Focus Room">
+<meta property="og:url"
+content="https://cinenostalgia.in/pomodoro/">
+
+<meta name="theme-color" content="#0f172a">
+
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebApplication",
+  "name":"Focus Room",
+  "description":"Free online Pomodoro timer with ambient sounds, fullscreen mode and productivity tracking.",
+  "applicationCategory":"ProductivityApplication",
+  "operatingSystem":"Any",
+  "url":"https://cinenostalgia.in/pomodoro/"
+}
+</script>
+
+<title>Focus Room - Free Online Pomodoro Timer for Students</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<link rel="preload"
+href="background.png"
+as="image">
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<h1 style="display:none;">
+Focus Room - Free Online Pomodoro Timer
+</h1>
+
+<div class="background"></div>
+
+<div class="container">
+
+ <div class="modes">
+
+        <button class="mode active" data-mode="focus">
+            📚 Focus
+        </button>
+
+        <button class="mode" data-mode="short">
+            ☕ Break
+        </button>
+
+        <button class="mode" data-mode="long">
+            🌴 Long Break
+        </button>
+
+    </div>
+    
+    <div class="timer-wrapper">
+
+        <svg class="progress-ring" width="280" height="280">
+
+            <circle
+                class="ring-bg"
+                cx="140"
+                cy="140"
+                r="120">
+            </circle>
+
+            <circle
+                class="ring-progress"
+                cx="140"
+                cy="140"
+                r="120">
+            </circle>
+
+        </svg>
+
+        <div class="timer-display" id="timer">
+            25:00
+        </div>
+
+    </div>
+
+   <div class="controls">
+
+    <div class="control-group">
+        <div class="action-btn start-btn" id="startBtn">▶</div>
+        <span>START</span>
+    </div>
+
+    <div class="control-group">
+        <div class="action-btn pause-btn" id="pauseBtn">❚❚</div>
+        <span>PAUSE</span>
+    </div>
+
+    <div class="control-group">
+        <div class="action-btn reset-btn" id="resetBtn">↻</div>
+        <span>RESET</span>
+    </div>
+
+</div>
+
+    <div class="stats">
+
+        <div>
+            <span id="sessions">0</span>
+            <small>Sessions</small>
+        </div>
+
+        <div>
+            <span id="focusTime">0m</span>
+            <small>Focus Time</small>
+        </div>
+
+        <div>
+        <span id="streak">1</span>
+        <small>Day Streak 🔥</small>
+    </div>
+
+    </div>
+
+    <button id="fullscreenBtn" class="fullscreen">
+        ⛶ Focus Mode
+    </button>
+
+</div>
+
+<div id="toast"></div>
+
+<div class="sidebar">
+
+    <div class="logo">
+        <h2>Focus Room</h2>
+        <p>Study With Focus</p>
+    </div>
+
+    <nav>
+
+        <a class="nav-item active">
+            ⏱ Timer
+        </a>
+
+        <a class="nav-item">
+            📊 History
+        </a>
+
+        <a class="nav-item">
+            📈 Stats
+        </a>
+
+        <a class="nav-item">
+            🎯 Goals
+        </a>
+
+        <a class="nav-item">
+            ⚙ Settings
+        </a>
+
+    </nav>
+
+   <div class="quote">
+
+    <p id="dailyQuote">
+        Discipline today,<br>
+        freedom tomorrow ✨
+    </p>
+
+</div>
+    <div class="live-clock">
+
+    <div id="currentTime">
+        10:42 PM
+    </div>
+
+    <div id="currentDate">
+        Wednesday, 17 June 2026
+    </div>
+
+</div>
+</div>
+<div class="right-panel">
+
+    <div class="widget">
+        <h3>🎯 Today's Goal</h3>
+
+        <div class="goal-dots">
+
+    <span id="dot1"></span>
+    <span id="dot2"></span>
+    <span id="dot3"></span>
+    <span id="dot4"></span>
+    <span id="dot5"></span>
+    <span id="dot6"></span>
+
+</div>
+
+       <p>
+    <span id="goalCount">0</span> / 6 Sessions
+</p>
+    </div>
+
+    <div class="widget">
+        <h3>⏱ Focus Time</h3>
+        <div class="big-stat" id="focusTimeWidget">
+    0m
+</div>
+    </div>
+
+    <div class="widget">
+       <h3>✅ Last Session</h3>
+
+    <p id="lastSessionText">
+        No sessions yet
+    </p>
+
+    <small id="lastSessionTime">
+        --
+    </small>
+    </div>
+
+    <div class="widget">
+        <h3>🎵 Ambient Sound</h3>
+
+        <div class="sound-buttons">
+            <button id="rainBtn">🍃</button>
+            <button id="oceanBtn">🌊</button>
+            <button id="lofiBtn">🎧</button>
+            <button id="stopSoundBtn">🔇</button>
+        </div>
+    </div>
+
+    <div class="widget quote-card">
+        <p>
+            One session at a time.
+        </p>
+
+        <small>
+            Stay with the process.
+        </small>
+    </div>
+
+</div>
+<div class="rain"></div>
+<audio id="rainSound" loop>
+    <source src="rain.mp3" type="audio/mpeg">
+</audio>
+<audio id="oceanSound" loop>
+    <source src="ocean.mp3" type="audio/mpeg">
+</audio>
+<audio id="lofiSound" loop>
+    <source src="lofi.mp3" type="audio/mpeg">
+</audio>
+<audio id="bellSound">
+    <source src="bell.mp3" type="audio/mpeg">
+</audio>
+<script src="script.js"></script>
+</body>
+</html>
