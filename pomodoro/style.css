@@ -526,7 +526,7 @@ margin-left:0;
  @media(max-width:1400px){
 
 .right-panel{
-display:none;
+display:flex;
 }
 
 }
