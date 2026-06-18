@@ -523,13 +523,6 @@ margin-left:0;
 }
 
 }
- @media(max-width:1400px){
-
-.right-panel{
-display:flex;
-}
-
-}
 
 .live-clock{
 
@@ -588,6 +581,35 @@ display:flex;
 
 @media(max-width:768px){
 
+body{
+    display:block;
+    padding:15px;
+    min-height:auto;
+}
+
+.sidebar{
+    display:none;
+}
+
+.container{
+    width:100%;
+    max-width:100%;
+    margin:0 auto;
+}
+.right-panel{
+    position:relative;
+    top:auto;
+    right:auto;
+    transform:none;
+    width:100%;
+    margin:20px 0 0 0;
+    z-index:2;
+}
+
+.widget{
+    width:100%;
+}
+
 .controls{
     gap:40px;
 }
@@ -597,17 +619,9 @@ display:flex;
 }
 
 .mode{
+    min-width:90px;
     width:auto;
-    min-width:100px;
-    padding:12px 16px;
+    padding:12px 14px;
 }
-.right-panel{
-position:static;
-transform:none;
-width:100%;
-margin-top:20px;
-}
-.widget{
-        margin-bottom:15px;
-    }
+
 }
